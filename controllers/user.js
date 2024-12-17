@@ -11,6 +11,46 @@ const getUserInfo = asyncHandler(async (req, res) => {
   });
 });
 
+// const updateInfo = asyncHandler(async (req, res) => {
+//   const { _id } = req.user;
+//   const {
+//     name,
+//     dateOfBirth,
+//     country,
+//     city,
+//     gender,
+//     introductory,
+//     hometown,
+//     hobby,
+//     height,
+//     weight,
+//   } = req.body;
+//   // console.log(req.body);
+//   if (!name || !dateOfBirth || !country || !city) {
+//     return res.status(400).json({
+//       success: false,
+//       mes: "Missing input!",
+//     });
+//   }
+
+//   await userModel.findByIdAndUpdate(_id, {
+//     name,
+//     dateOfBirth,
+//     country,
+//     city,
+//     gender,
+//     introduce: introductory,
+//     hometown,
+//     hobbies: hobby,
+//     height,
+//     weight,
+//   });
+//   res.status(200).json({
+//     success: true,
+//     mes: "Update success!",
+//   });
+// });
+
 const updateInfo = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const {
@@ -25,30 +65,51 @@ const updateInfo = asyncHandler(async (req, res) => {
     height,
     weight,
   } = req.body;
-  // console.log(req.body);
+
   if (!name || !dateOfBirth || !country || !city) {
     return res.status(400).json({
       success: false,
-      mes: "Missing input!",
+      mes: "Missing required fields!",
     });
   }
 
-  await userModel.findByIdAndUpdate(_id, {
-    name,
-    dateOfBirth,
-    country,
-    city,
-    gender,
-    introduce: introductory,
-    hometown,
-    hobbies: hobby,
-    height,
-    weight,
-  });
-  res.status(200).json({
-    success: true,
-    mes: "Update success!",
-  });
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({
+      success: false,
+      mes: "Missing image files!",
+    });
+  }
+
+  try {
+    const updatedUser = await userModel.findByIdAndUpdate(
+      _id,
+      {
+        name,
+        dateOfBirth,
+        country,
+        city,
+        gender,
+        introduce: introductory,
+        hometown,
+        hobbies: hobby,
+        height,
+        weight,
+        photos: req.files.map((el) => el.path),
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      mes: "Update success!",
+      data: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      mes: error.message || "Failed to update user information.",
+    });
+  }
 });
 
 const uploadImages = asyncHandler(async (req, res) => {
