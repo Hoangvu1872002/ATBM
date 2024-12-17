@@ -66,17 +66,17 @@ const updateInfo = asyncHandler(async (req, res) => {
     weight,
   } = req.body;
 
-  if (!name || !dateOfBirth || !country || !city) {
+  if (
+    !name ||
+    !dateOfBirth ||
+    !country ||
+    !city ||
+    !req.files ||
+    req.files.length === 0
+  ) {
     return res.status(400).json({
       success: false,
       mes: "Missing required fields!",
-    });
-  }
-
-  if (!req.files || req.files.length === 0) {
-    return res.status(400).json({
-      success: false,
-      mes: "Missing image files!",
     });
   }
 
