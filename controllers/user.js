@@ -358,13 +358,13 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
           user;
 
         return {
+          ...user,
           userID: user._id,
           name: name,
           introduce: introduce,
           age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
           address: city,
           listImages: photos,
-          user,
         };
       });
     };
