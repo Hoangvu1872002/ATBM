@@ -353,10 +353,21 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
+    const { _id, name, introduce, dateOfBirth, city, photos, ...userInfo } =
+      user;
+
     res.status(200).json({
       success: true,
       mes: "Users fetched successfully!",
-      data: users,
+      data: {
+        userId: _id,
+        name: name,
+        introduce: user.introduce,
+        age: new Date().getFullYear() - dateOfBirth.getFullYear(),
+        address: city,
+        listImages: photos,
+        remainInfo,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -512,6 +523,9 @@ const getUserInfo = asyncHandler(async (req, res) => {
         mes: "User not found!",
       });
     }
+
+    // const { _id, name, introduce, dateOfBirth, city, photos, ...userInfo } =
+    //   user;
 
     res.status(200).json({
       success: true,
