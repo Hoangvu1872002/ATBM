@@ -405,10 +405,29 @@ const getUsersInLikeList = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
+    const transformUsers = (users) => {
+      return users.map((user) => {
+        const { _id, name, gender, dateOfBirth, city, photos } = user;
+
+        return {
+          ...user,
+          userID: _id,
+          name: name,
+          gender: gender,
+          age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
+          address: city,
+          photo: photos[0],
+          // ...user,
+        };
+      });
+    };
+
+    const data = transformUsers(usersInLike.map((user) => user._doc));
+
     res.status(200).json({
       success: true,
       mes: "Users in listLike fetched successfully!",
-      data: usersInLike,
+      data,
     });
   } catch (error) {
     res.status(500).json({
@@ -497,10 +516,29 @@ const getUsersWhoLikedMe = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
+    const transformUsers = (users) => {
+      return users.map((user) => {
+        const { _id, name, gender, dateOfBirth, city, photos } = user;
+
+        return {
+          ...user,
+          userID: _id,
+          name: name,
+          gender: gender,
+          age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
+          address: city,
+          photo: photos[0],
+          // ...user,
+        };
+      });
+    };
+
+    const data = transformUsers(usersWhoLikedMe.map((user) => user._doc));
+
     res.status(200).json({
       success: true,
       mes: "Users who liked you fetched successfully!",
-      data: usersWhoLikedMe,
+      data,
     });
   } catch (error) {
     res.status(500).json({
