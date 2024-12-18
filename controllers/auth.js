@@ -18,9 +18,9 @@ const login = asyncHandler(async (req, res) => {
 
   if (response && (await response.isCorrectPassword(password))) {
     // tách pw và role ra khỏi response
-    const { password, role, refreshToken, ...userData } = response.toObject();
+    const { password, refreshToken, ...userData } = response.toObject();
     // tạo access token
-    const accessToken = generateAccessToken(response._id, role);
+    const accessToken = generateAccessToken(response._id);
     // tạo refresh token
     const newRefreshToken = generateRefreshToken(response._id);
     //Lưu refresh token vào database
@@ -32,6 +32,7 @@ const login = asyncHandler(async (req, res) => {
     // Lưu refresh token vào cookie
     return res.status(200).json({
       accessToken,
+      userInfo: userData,
     });
   } else {
     throw new Error("Invalid credenttials!");

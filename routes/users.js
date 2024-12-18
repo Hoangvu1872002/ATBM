@@ -12,10 +12,12 @@ const {
   getUsersInDislikeList,
   getUsersInMatchList,
   getUsersWhoLikedMe,
+  getCurrentInfo,
 } = require("../controllers/user");
 const { verifyAccessToken } = require("../middlewares/verifyToken");
 const uploadImage = require("../config/cloudinary.config");
 
+router.get("/get-current-info", verifyAccessToken, getCurrentInfo);
 router.get("/get-user-info", verifyAccessToken, getUserInfo);
 router.post(
   "/update-info",
