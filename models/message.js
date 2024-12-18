@@ -2,12 +2,13 @@ const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema(
   {
-    sender: { type: mongoose.Types.ObjectId, ref: "User" }, // id của người gửi
-    receiver: { type: mongoose.Types.ObjectId, ref: "User" }, // id của người nhận
+    sender: { type: mongoose.Types.ObjectId, ref: "User" },
+    receiver: { type: mongoose.Types.ObjectId, ref: "User" },
+    system: { type: Boolean, default: false },
     text: { type: String },
-    image: { type: String }, // đường dẫn ảnh
-    video: { type: String }, // đường dẫn video
-    file: { type: String }, // đường dẫn file
+    image: { type: String },
+    video: { type: String },
+    file: { type: String },
     status: {
       type: String,
       enum: ["sent", "received", "pending"],

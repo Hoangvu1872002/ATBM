@@ -6,7 +6,7 @@ const { type } = require("os");
 var userSchema = new mongoose.Schema(
   {
     name: { type: String },
-    dateOfBirth: { type: Date }, // timestamp
+    dateOfBirth: { type: Date },
     password: { type: String, require: true },
     mobile: { type: String, require: true },
     country: { type: String },
@@ -18,6 +18,11 @@ var userSchema = new mongoose.Schema(
     hobbies: [{ type: String }],
     height: { type: Number },
     weight: { type: Number },
+    latitude: { type: Number },
+    longitude: { type: Number },
+    listDislike: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+    listLike: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+    listMatch: [{ type: mongoose.Types.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,
