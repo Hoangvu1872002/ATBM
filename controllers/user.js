@@ -353,21 +353,36 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
-    const { _id, name, introduce, dateOfBirth, city, photos, ...userInfo } =
-      user;
+    const transformUsers = (users) => {
+      return users.map((user) => {
+        const {
+          _id,
+          name,
+          introduce,
+          dateOfBirth,
+          city,
+          photos,
+          ...remainInfo
+        } = user;
+
+        return {
+          userId: _id,
+          name: name,
+          introduce: introduce,
+          age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
+          address: city,
+          listImages: photos,
+          remainInfo,
+        };
+      });
+    };
+
+    const data = transformUsers(users);
 
     res.status(200).json({
       success: true,
       mes: "Users fetched successfully!",
-      data: {
-        userId: _id,
-        name: name,
-        introduce: user.introduce,
-        age: new Date().getFullYear() - dateOfBirth.getFullYear(),
-        address: city,
-        listImages: photos,
-        remainInfo,
-      },
+      data,
     });
   } catch (error) {
     res.status(500).json({
