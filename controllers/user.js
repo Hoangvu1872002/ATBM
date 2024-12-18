@@ -354,24 +354,17 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
 
     const transformUsers = (users) => {
       return users.map((user) => {
-        const {
-          _id,
-          name,
-          introduce,
-          dateOfBirth,
-          city,
-          photos,
-          ...remainInfo
-        } = user;
+        const { _id, name, introduce, dateOfBirth, city, photos, ...user } =
+          user;
 
         return {
-          userID: _id,
+          userID: user._id,
           name: name,
           introduce: introduce,
           age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
           address: city,
           listImages: photos,
-          remainInfo,
+          user,
         };
       });
     };
