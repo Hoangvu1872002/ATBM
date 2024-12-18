@@ -111,8 +111,6 @@ const addToListLike = asyncHandler(async (req, res) => {
     // console.log(inTargetUserListLike);
 
     if (inTargetUserListLike) {
-      console.log("aa");
-
       // Nếu đối phương đã thích mình, loại bỏ mình khỏi listLike của họ
       targetUser.listLike = targetUser.listLike.filter(
         (userId) => userId.toString() !== _id
@@ -341,6 +339,7 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
 
     // Lọc danh sách users ngoại trừ những người có trong listLike, listDislike, và listMatch
     const excludedUsers = [
+      _id,
       ...user.listLike,
       ...user.listDislike,
       ...user.listMatch,
