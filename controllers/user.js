@@ -366,7 +366,7 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
         } = user;
 
         return {
-          userId: _id,
+          userID: _id,
           name: name,
           introduce: introduce,
           age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
