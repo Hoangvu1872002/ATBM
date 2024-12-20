@@ -27,14 +27,7 @@ const updateInfo = asyncHandler(async (req, res) => {
     httpPhotos,
   } = req.body;
 
-  if (
-    !name ||
-    !dateOfBirth ||
-    !country ||
-    !city ||
-    !req.files ||
-    req.files.length === 0
-  ) {
+  if (!name || !dateOfBirth || !country || !city) {
     return res.status(400).json({
       success: false,
       mes: "Missing required fields!",

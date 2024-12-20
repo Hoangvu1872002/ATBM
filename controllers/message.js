@@ -64,7 +64,7 @@ const addMessage = asyncHandler(async (req, res) => {
 
 const revokeMessage = asyncHandler(async (req, res) => {
   try {
-    const { messageId } = req.params; // Lấy messageId từ tham số URL
+    const { messageId } = req.body; // Lấy messageId từ tham số URL
     const { _id } = req.user; // Lấy userId từ xác thực token
 
     // Kiểm tra xem tin nhắn có tồn tại không
@@ -98,8 +98,7 @@ const revokeMessage = asyncHandler(async (req, res) => {
 
 const getMessagesInRoom = asyncHandler(async (req, res) => {
   try {
-    const { roomId } = req.params; // Lấy roomId từ tham số URL
-    const { _id } = req.user; // Lấy userId từ token (nếu cần)
+    const { roomId } = req.body; // Lấy roomId từ tham số URL
 
     // Tìm tất cả tin nhắn trong phòng chat đã cho và populate thông tin người gửi và người nhận
     const messages = await MessageModel.find({ room: roomId })
@@ -127,4 +126,4 @@ const getMessagesInRoom = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { addMessage, revokeMessage, getMessagesInRoom };
+module.exports = { getMessagesInRoom };
