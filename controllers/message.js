@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const asyncHandler = require("express-async-handler");
-const MessageModel = require("./models/MessageModel");
-const RoomModel = require("./models/RoomModel");
+const MessageModel = require("./../models/message");
+const RoomModel = require("./../models/room");
 
 const addMessage = asyncHandler(async (req, res) => {
   try {
