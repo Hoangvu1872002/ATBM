@@ -33,6 +33,7 @@ const updateInfo = asyncHandler(async (req, res) => {
       mes: "Missing required fields!",
     });
   }
+  console.log(httpPhotos.concat(req.files.map((el) => el.path)));
 
   try {
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -48,7 +49,7 @@ const updateInfo = asyncHandler(async (req, res) => {
         hobbies: hobby,
         height,
         weight,
-        photos: httpPhotos.concat(req.files.map((el) => el.path)),
+        photos: httpPhotos.concat([...req.files.map((el) => el.path)]),
       },
       { new: true }
     );
