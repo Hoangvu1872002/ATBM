@@ -10,6 +10,7 @@ var userSchema = new mongoose.Schema(
     password: { type: String, require: true },
     mobile: { type: String, require: true },
     country: { type: String },
+    roomIDs: [{ type: mongoose.Types.ObjectId, ref: "Room" }],
     city: { type: String },
     gender: { type: String },
     photos: [{ type: String }],

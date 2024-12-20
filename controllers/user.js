@@ -24,6 +24,7 @@ const updateInfo = asyncHandler(async (req, res) => {
     hobby,
     height,
     weight,
+    httpPhotos,
   } = req.body;
 
   if (
@@ -54,7 +55,7 @@ const updateInfo = asyncHandler(async (req, res) => {
         hobbies: hobby,
         height,
         weight,
-        photos: req.files.map((el) => el.path),
+        photos: httpPhotos.concat(req.files.map((el) => el.path)),
       },
       { new: true }
     );
