@@ -243,7 +243,7 @@ const handleSocketEvents = (io, socket) => {
       //   .populate("receiver", "name"); // Lấy thông tin của receiver
 
       // // Gửi tin nhắn đến tất cả user trong phòng chat
-      io.emit("newMessage", { data, guestId });
+      io.emit("newMessage", data);
 
       console.log("Tin nhắn đã được thêm thành công.");
     } catch (error) {
