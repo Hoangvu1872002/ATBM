@@ -108,10 +108,26 @@ const handleSocketEvents = (io, socket) => {
         })
         .populate({
           path: "receiver",
-          select: "name _id photos", // Lấy thông tin người gửi
+          select: "name _id photos", // Lấy thông tin người nhận
         });
 
       const formattedMessages = messages.map((msg) => {
+        const senderInfo = msg.sender
+          ? {
+              id: msg.sender._id,
+              name: msg.sender.name,
+              avatar: msg.sender.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+            }
+          : null;
+
+        const receiverInfo = msg.receiver
+          ? {
+              id: msg.receiver._id,
+              name: msg.receiver.name,
+              avatar: msg.receiver.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+            }
+          : null;
+
         return {
           _id: msg._id,
           createdAt: msg.createdAt,
@@ -119,22 +135,9 @@ const handleSocketEvents = (io, socket) => {
           received: true,
           sent: false,
           text: msg.text,
-          user:
-            msg.sender._id === userId
-              ? {
-                  id: msg.sender._id,
-                  name: msg.sender.name,
-                  avatar: msg.sender.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
-                }
-              : null, // Nếu không có sender (tin nhắn hệ thống)
+          user: senderInfo && senderInfo.id === userId ? senderInfo : null,
           guest:
-            msg.receiver._id === guestId
-              ? {
-                  id: msg.receiver._id,
-                  name: msg.receiver.name,
-                  avatar: msg.receiver.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
-                }
-              : null, // Nếu không có sender (tin nhắn hệ thống)
+            receiverInfo && receiverInfo.id === guestId ? receiverInfo : null,
           system: msg.system,
           image: msg.image,
           video: msg.video,
