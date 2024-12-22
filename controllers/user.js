@@ -123,8 +123,8 @@ const addToListLike = asyncHandler(async (req, res) => {
       user.listMatch.push(userIdToAdd);
       targetUser.listMatch.push(_id);
 
-      const userIDsObject = [userIdToAdd, _id].map((id) =>
-        mongoose.Types.ObjectId(id)
+      const userIDsObject = [userIdToAdd, _id].map(
+        (id) => new mongoose.Types.ObjectId(id)
       );
 
       // Kiểm tra xem phòng chat đã tồn tại chưa
@@ -139,19 +139,20 @@ const addToListLike = asyncHandler(async (req, res) => {
         });
       }
 
+      const newRoom = new RoomModel({ userIDs: userIDsObject });
+      const check = await newRoom.save();
+
       const systemMessage = new MessageModel({
         sender: _id, // Tin nhắn hệ thống không có người gửi cụ thể
         receiver: userIdToAdd,
         system: true, // Đánh dấu là tin nhắn hệ thống
-        room: existingRoom._id,
+        room: check._id,
         text: "Hai bạn hãy bắt đầu gửi nhau những lời yêu thương.", // Nội dung tin nhắn
       });
 
       await systemMessage.save();
 
       // Tạo phòng chat mới nếu chưa tồn tại
-      const newRoom = new RoomModel({ userIDs: userIDsObject });
-      await newRoom.save();
     } else {
       // Nếu đối phương chưa thích mình, chỉ thêm vào danh sách listLike của user hiện tại
       if (!inUserListLike) {
