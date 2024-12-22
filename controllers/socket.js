@@ -29,6 +29,12 @@ const handleSocketEvents = (io, socket) => {
             (user) => user._id.toString() !== userId
           );
 
+          // Nếu không có đối phương (phòng chỉ có 1 người), bỏ qua
+          if (opponents.length === 0) return null;
+
+          // Lấy thông tin người đối phương (lấy phần tử đầu tiên)
+          const opponent = opponents[0];
+
           // Lấy tin nhắn mới nhất trong phòng
           const latestMessage = await MessageModel.findOne({ room: room._id })
             .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
@@ -38,9 +44,8 @@ const handleSocketEvents = (io, socket) => {
             });
 
           if (latestMessage) {
+            // Kiểm tra nếu tồn tại image, video hoặc file
             let text = latestMessage.text;
-
-            // Kiểm tra nếu tồn tại image, video hoặc file, đổi text thành "tệp đính kèm"
             if (
               latestMessage.image ||
               latestMessage.video ||
@@ -49,25 +54,28 @@ const handleSocketEvents = (io, socket) => {
               text = "Tệp đính kèm.";
             }
 
-            // Lấy thông tin đối phương trong phòng (ngoại trừ chính userId)
-
-            chatList.push({
-              userID: opponents._id,
-              userName: opponents.name,
+            // Trả thông tin phòng chat
+            return {
+              userID: opponent._id,
+              userName: opponent.name,
               message: text,
               time: latestMessage.createdAt,
               isNewMessage: latestMessage.status,
-              avatar: opponents.photos[0],
-              userIsSendMes: latestMessage.sender === userId ? true : false,
-            });
-          } else {
-            console.log("errrrrrrrrrr");
+              avatar: opponent.photos?.[0] || null, // Lấy ảnh đại diện đầu tiên (nếu có)
+              userIsSendMes: latestMessage.sender._id.toString() === userId, // So sánh chính xác
+            };
           }
+
+          // Nếu không có tin nhắn, bỏ qua phòng này
+          return null;
         })
       );
 
+      // Loại bỏ các giá trị null trong mảng chatList
+      const filteredChatList = chatList.filter((item) => item !== null);
+
       // Trả kết quả về client
-      socket.emit("getChatList", { chatList });
+      socket.emit("getChatList", { chatList: filteredChatList });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách phòng chat:", error.message);
       socket.emit("getChatList", { error: "Đã xảy ra lỗi, vui lòng thử lại." });
