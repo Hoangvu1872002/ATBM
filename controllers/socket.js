@@ -210,6 +210,32 @@ const handleSocketEvents = (io, socket) => {
       // Lưu tin nhắn vào cơ sở dữ liệu
       const savedMessage = await newMessage.save();
 
+      const formattedMessage = (msg) => {
+        const senderInfo = msg.sender
+          ? {
+              id: msg.sender._id.toString(),
+              name: msg.sender.name,
+              avatar: msg.sender.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+            }
+          : null;
+
+        return {
+          _id: msg._id,
+          createdAt: msg.createdAt,
+          pending: false,
+          received: true,
+          sent: false,
+          text: msg.text,
+          guest: senderInfo,
+          system: msg.system,
+          image: msg.image,
+          video: msg.video,
+          file: msg.file,
+        };
+      };
+
+      const data = formattedMessage(savedMessage);
+
       // Lấy toàn bộ tin nhắn của room chat
       // const messages = await Message.find({ room: room })
       //   .sort({ createdAt: 1 }) // Sắp xếp theo thời gian tăng dần
@@ -217,7 +243,7 @@ const handleSocketEvents = (io, socket) => {
       //   .populate("receiver", "name"); // Lấy thông tin của receiver
 
       // // Gửi tin nhắn đến tất cả user trong phòng chat
-      io.to(room).emit("sendMessage", savedMessage);
+      io.emit("newMessage", { data, guestId });
 
       console.log("Tin nhắn đã được thêm thành công.");
     } catch (error) {
