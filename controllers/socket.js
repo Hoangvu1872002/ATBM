@@ -83,6 +83,76 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
+  socket.on("getAllMessages", async (data) => {
+    const { userId, guestId } = data;
+
+    try {
+      // Tìm phòng chat có chứa cả hai userId và guestId
+      const room = await RoomModel.findOne({
+        userIDs: { $all: [userId, guestId] }, // Kiểm tra cả hai userId đều có trong phòng
+      });
+
+      if (!room) {
+        return socket.emit("getAllMessages", {
+          status: "error",
+          message: "Không tìm thấy phòng chat giữa hai người.",
+        });
+      }
+
+      // Lấy tất cả tin nhắn của phòng chat và sắp xếp theo thời gian
+      const messages = await MessageModel.find({ room: room._id })
+        .sort({ createdAt: 1 }) // Sắp xếp theo thời gian tăng dần (hoặc -1 nếu muốn giảm dần)
+        .populate({
+          path: "sender",
+          select: "name _id photos", // Lấy thông tin người gửi
+        })
+        .populate({
+          path: "receiver",
+          select: "name _id photos", // Lấy thông tin người gửi
+        });
+
+      const formattedMessages = messages.map((msg) => {
+        return {
+          _id: msg._id,
+          createdAt: msg.createdAt,
+          pending: false,
+          received: true,
+          sent: false,
+          text: msg.text,
+          user:
+            msg.sender === userId
+              ? {
+                  id: msg.sender._id,
+                  name: msg.sender.name,
+                  avatar: msg.sender.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+                }
+              : null, // Nếu không có sender (tin nhắn hệ thống)
+          guest:
+            msg.receiver === guestId
+              ? {
+                  id: msg.receiver._id,
+                  name: msg.receiver.name,
+                  avatar: msg.receiver.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+                }
+              : null, // Nếu không có sender (tin nhắn hệ thống)
+          system: msg.system,
+          image: msg.image,
+          video: msg.video,
+          file: msg.file,
+        };
+      });
+
+      // Trả về danh sách tin nhắn và thông tin phòng chat
+      socket.emit("getAllMessages", formattedMessages);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách tin nhắn:", error);
+      socket.emit("getAllMessages", {
+        status: "error",
+        message: "Đã xảy ra lỗi khi lấy danh sách tin nhắn.",
+      });
+    }
+  });
+
   socket.on("send_message", async (data) => {
     const { sender, receiver, room, text, image, video, file, system } = data;
 
