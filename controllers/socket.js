@@ -157,27 +157,36 @@ const handleSocketEvents = (io, socket) => {
   });
 
   socket.on("send_message", async (data) => {
-    const { sender, receiver, room, text, image, video, file, system } = data;
+    const { guestId, message } = data;
 
-    if (!sender || !receiver || !room) {
+    if (!message.user || !guestId) {
       console.log("Thiếu thông tin cần thiết: sender, receiver hoặc room.");
     }
 
-    if (!text && !image && !video && !file) {
+    if (!message.text && !message.image && !message.video && !message.file) {
       console.log(
         "Phải cung cấp ít nhất một nội dung: text, image, video hoặc file."
       );
     }
 
     try {
-      // Lưu tin nhắn vào database
+      const room = await RoomModel.findOne({
+        userIDs: { $all: [message.user._id, guestId] }, // Kiểm tra cả hai userId đều có trong phòng
+      });
 
-      const existingRoom = await RoomModel.findById(room);
-      if (!existingRoom) {
-        console.log("Phòng chat không tồn tại.");
+      if (!room) {
+        return socket.emit("sendMessage", {
+          status: "error",
+          message: "Không tìm thấy phòng chat giữa hai người.",
+        });
       }
 
-      const contentFields = [text, image, video, file];
+      const contentFields = [
+        message.text,
+        message.image,
+        message.video,
+        message.file,
+      ];
       const nonEmptyFields = contentFields.filter((field) => field); // Lấy các trường không rỗng
 
       if (nonEmptyFields.length > 1) {
@@ -188,13 +197,13 @@ const handleSocketEvents = (io, socket) => {
 
       // Tạo tin nhắn mới
       const newMessage = new MessageModel({
-        sender,
-        receiver,
-        room,
-        text,
-        image,
-        video,
-        file,
+        sender: message.user._id,
+        receiver: guestId,
+        room: room._id,
+        text: message.text,
+        image: message.image,
+        video: message.video,
+        file: message.file,
         system: system || false, // Nếu không phải tin nhắn hệ thống, mặc định là `false`
       });
 
@@ -202,13 +211,13 @@ const handleSocketEvents = (io, socket) => {
       const savedMessage = await newMessage.save();
 
       // Lấy toàn bộ tin nhắn của room chat
-      const messages = await Message.find({ room: room })
-        .sort({ createdAt: 1 }) // Sắp xếp theo thời gian tăng dần
-        .populate("sender", "name") // Lấy thông tin của sender
-        .populate("receiver", "name"); // Lấy thông tin của receiver
+      // const messages = await Message.find({ room: room })
+      //   .sort({ createdAt: 1 }) // Sắp xếp theo thời gian tăng dần
+      //   .populate("sender", "name") // Lấy thông tin của sender
+      //   .populate("receiver", "name"); // Lấy thông tin của receiver
 
-      // Gửi tin nhắn đến tất cả user trong phòng chat
-      io.to(room).emit("receive_message", { messages });
+      // // Gửi tin nhắn đến tất cả user trong phòng chat
+      io.to(room).emit("sendMessage", savedMessage);
 
       console.log("Tin nhắn đã được thêm thành công.");
     } catch (error) {
