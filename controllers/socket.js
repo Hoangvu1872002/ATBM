@@ -1,4 +1,4 @@
-const Message = require("../models/message"); // Model Message
+const MessageModel = require("../models/message"); // Model Message
 const RoomModel = require("../models/room");
 const UserModel = require("../models/user"); // Model Room
 
