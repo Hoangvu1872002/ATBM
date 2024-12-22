@@ -53,10 +53,16 @@ const server = http
   .listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 const socketIO = require("socket.io");
+const { handleSocketEvents } = require("./controllers/socket");
 // const driverModel = require("./models/driverModel");
 const io = socketIO(server, {
   cors: {
     origin: "*",
   },
 });
+
+io.on("connection", (socket) => {
+  handleSocketEvents(io, socket); // Gọi hàm xử lý từ file `socketHandlers.js`
+});
+
 module.exports = app;

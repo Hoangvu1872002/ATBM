@@ -11,11 +11,11 @@ const messageSchema = new mongoose.Schema(
     image: { type: String },
     video: { type: String },
     file: { type: String },
-    // status: {
-    //   type: String,
-    //   enum: ["sent", "received", "pending"],
-    //   default: "pending",
-    // },
+    status: {
+      type: String,
+      enum: ["received", "watched"],
+      default: "received",
+    },
   },
   {
     timestamps: true,
