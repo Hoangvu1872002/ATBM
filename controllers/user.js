@@ -133,7 +133,7 @@ const addToListLike = asyncHandler(async (req, res) => {
       });
 
       if (existingRoom) {
-        return res.status(200).json({
+        return res.status(400).json({
           mes: "Phòng chat đã tồn tại.",
           room: existingRoom,
         });
