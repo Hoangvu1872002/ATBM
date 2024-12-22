@@ -62,6 +62,8 @@ const io = socketIO(server, {
 });
 
 io.on("connection", (socket) => {
+  console.log("connected");
+
   handleSocketEvents(io, socket); // Gọi hàm xử lý từ file `socketHandlers.js`
 });
 

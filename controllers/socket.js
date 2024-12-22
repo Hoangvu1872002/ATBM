@@ -22,7 +22,7 @@ const handleSocketEvents = (io, socket) => {
         });
       }
 
-      io.emit("receive_message", { user });
+      socket.emit("receive_message", { user });
 
       // Trả về danh sách các phòng chat và thông tin người dùng trong các phòng
       return res.status(200).json({
