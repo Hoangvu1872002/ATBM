@@ -5,7 +5,7 @@ const messageSchema = new mongoose.Schema(
     sender: { type: mongoose.Types.ObjectId, ref: "User" },
     receiver: { type: mongoose.Types.ObjectId, ref: "User" },
     system: { type: Boolean, default: false },
-    // room: { type: mongoose.Types.ObjectId, ref: "Room" },
+    room: { type: mongoose.Types.ObjectId, ref: "Room" },
     revoked: { type: Boolean, default: false },
     text: { type: String },
     image: { type: String },
@@ -13,7 +13,6 @@ const messageSchema = new mongoose.Schema(
     file: { type: String },
     status: {
       type: Boolean,
-
       default: false,
     },
   },
