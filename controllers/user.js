@@ -142,6 +142,9 @@ const addToListLike = asyncHandler(async (req, res) => {
       const newRoom = new RoomModel({ userIDs: userIDsObject });
       const check = await newRoom.save();
 
+      user.roomIDs.push(check._id);
+      targetUser.roomIDs.push(check._id);
+
       const systemMessage = new MessageModel({
         sender: _id, // Tin nhắn hệ thống không có người gửi cụ thể
         receiver: userIdToAdd,
