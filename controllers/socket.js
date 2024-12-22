@@ -204,7 +204,7 @@ const handleSocketEvents = (io, socket) => {
         image: message.image,
         video: message.video,
         file: message.file,
-        system: system || false, // Nếu không phải tin nhắn hệ thống, mặc định là `false`
+        system: false, // Nếu không phải tin nhắn hệ thống, mặc định là `false`
       });
 
       // Lưu tin nhắn vào cơ sở dữ liệu
