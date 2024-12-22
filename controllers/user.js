@@ -34,7 +34,7 @@ const updateInfo = asyncHandler(async (req, res) => {
     });
   }
 
-  let updatedPhotos = JSON.parse(httpPhotos) || []; // Nếu không có httpPhotos, gán là mảng rỗng.
+  let updatedPhotos = httpPhotos ? JSON.parse(httpPhotos) : []; // Nếu không có httpPhotos, gán là mảng rỗng.
   if (req.files && req.files.length > 0) {
     const newPhotos = req.files.map((el) => el.path);
     updatedPhotos = updatedPhotos.concat(newPhotos); // Nối các tệp mới vào mảng cũ
@@ -51,7 +51,7 @@ const updateInfo = asyncHandler(async (req, res) => {
         gender,
         introduce: introductory,
         hometown,
-        hobbies: hobby,
+        hobbies: JSON.parse(hobby),
         height,
         weight,
         photos: updatedPhotos,
