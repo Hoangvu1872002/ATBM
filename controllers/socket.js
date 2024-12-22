@@ -51,9 +51,9 @@ const handleSocketEvents = (io, socket) => {
       const nonEmptyFields = contentFields.filter((field) => field); // Lấy các trường không rỗng
 
       if (nonEmptyFields.length > 1) {
-        return res.status(400).json({
-          mes: "Chỉ được phép gửi một trong các trường: text, image, video hoặc file.",
-        });
+        console.log(
+          "Chỉ được phép gửi một trong các trường: text, image, video hoặc file."
+        );
       }
 
       // Tạo tin nhắn mới
