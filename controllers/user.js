@@ -67,7 +67,7 @@ const updateInfo = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      mes: error.message || "Failed to update user information.",
+      mes: "Failed to update user information.",
     });
   }
 });
