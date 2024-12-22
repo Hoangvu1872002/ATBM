@@ -17,23 +17,12 @@ const handleSocketEvents = (io, socket) => {
 
       // Nếu không tìm thấy người dùng
       if (!user) {
-        return res.status(404).json({
-          mes: "Người dùng không tồn tại.",
-        });
+        console.log("Người dùng không tồn tại.");
       }
 
       socket.emit("receive_message", { user });
-
-      // Trả về danh sách các phòng chat và thông tin người dùng trong các phòng
-      return res.status(200).json({
-        mes: "Danh sách phòng chat của người dùng.",
-        rooms: user.roomIDs, // Mảng các phòng chat với thông tin người dùng
-      });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách phòng chat:", error.message);
-      return res.status(500).json({
-        mes: "Lỗi máy chủ khi lấy danh sách phòng chat.",
-      });
     }
   });
 
@@ -41,15 +30,13 @@ const handleSocketEvents = (io, socket) => {
     const { sender, receiver, room, text, image, video, file, system } = data;
 
     if (!sender || !receiver || !room) {
-      return res.status(400).json({
-        mes: "Thiếu thông tin cần thiết: sender, receiver hoặc room.",
-      });
+      console.log("Thiếu thông tin cần thiết: sender, receiver hoặc room.");
     }
 
     if (!text && !image && !video && !file) {
-      return res.status(400).json({
-        mes: "Phải cung cấp ít nhất một nội dung: text, image, video hoặc file.",
-      });
+      console.log(
+        "Phải cung cấp ít nhất một nội dung: text, image, video hoặc file."
+      );
     }
 
     try {
@@ -57,7 +44,7 @@ const handleSocketEvents = (io, socket) => {
 
       const existingRoom = await RoomModel.findById(room);
       if (!existingRoom) {
-        return res.status(404).json({ mes: "Phòng chat không tồn tại." });
+        console.log("Phòng chat không tồn tại.");
       }
 
       const contentFields = [text, image, video, file];
@@ -93,13 +80,9 @@ const handleSocketEvents = (io, socket) => {
       // Gửi tin nhắn đến tất cả user trong phòng chat
       io.to(room).emit("receive_message", { messages });
 
-      return res.status(201).json({
-        mes: "Tin nhắn đã được thêm thành công.",
-        data: savedMessage,
-      });
+      console.log("Tin nhắn đã được thêm thành công.");
     } catch (error) {
       console.error("Lỗi khi thêm tin nhắn:", error.message);
-      res.status(500).json({ mes: "Lỗi máy chủ khi thêm tin nhắn." });
     }
   });
 
