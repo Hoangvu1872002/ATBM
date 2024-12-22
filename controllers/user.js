@@ -1,6 +1,7 @@
 const userModel = require("../models/user");
 const RoomModel = require("../models/room");
 const MessageModel = require("../models/message");
+const mongoose = require("mongoose");
 
 const asyncHandler = require("express-async-handler");
 
