@@ -5,23 +5,72 @@ const UserModel = require("../models/user"); // Model Room
 const handleSocketEvents = (io, socket) => {
   socket.on("getChatList", async (data) => {
     try {
-      // Tìm tất cả các phòng chat mà người dùng tham gia và lấy thông tin người dùng tham gia trong từng phòng chat
-      const user = await UserModel.findById(data.userId).populate({
-        path: "roomIDs", // Tên trường chứa các phòng chat của người dùng
+      const userId = data.userId;
+
+      // Lấy tất cả các phòng mà người dùng tham gia
+      const user = await UserModel.findById(userId).populate({
+        path: "roomIDs",
         populate: {
-          path: "userIDs", // Tên trường chứa userIDs trong mỗi phòng chat
-          select: "name _id photos", // Chọn các trường cần thiết của user (có thể thay đổi theo yêu cầu)
+          path: "userIDs",
+          select: "name _id photos", // Chỉ lấy các thông tin cần thiết
         },
       });
 
-      // Nếu không tìm thấy người dùng
       if (!user) {
-        console.log("Người dùng không tồn tại.");
+        return socket.emit("getChatList", {
+          error: "Người dùng không tồn tại.",
+        });
       }
 
-      socket.emit("receive_message", { user });
+      const chatList = await Promise.all(
+        user.roomIDs.map(async (room) => {
+          // Lấy thông tin đối phương (ngoại trừ userId hiện tại)
+          const opponents = room.userIDs.filter(
+            (user) => user._id.toString() !== userId
+          );
+
+          // Lấy tin nhắn mới nhất trong phòng
+          const latestMessage = await MessageModel.findOne({ room: room._id })
+            .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
+            .populate({
+              path: "sender",
+              select: "name _id photos", // Lấy thông tin người gửi
+            });
+
+          if (latestMessage) {
+            let text = latestMessage.text;
+
+            // Kiểm tra nếu tồn tại image, video hoặc file, đổi text thành "tệp đính kèm"
+            if (
+              latestMessage.image ||
+              latestMessage.video ||
+              latestMessage.file
+            ) {
+              text = "Tệp đính kèm.";
+            }
+
+            // Lấy thông tin đối phương trong phòng (ngoại trừ chính userId)
+
+            chatList.push({
+              userID: opponents._id,
+              userName: opponents.name,
+              message: text,
+              time: latestMessage.createdAt,
+              isNewMessage: latestMessage.status,
+              avatar: opponents.photos[0],
+              userIsSendMes: latestMessage.sender === userId ? true : false,
+            });
+          } else {
+            console.log("errrrrrrrrrr");
+          }
+        })
+      );
+
+      // Trả kết quả về client
+      socket.emit("getChatList", { chatList });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách phòng chat:", error.message);
+      socket.emit("getChatList", { error: "Đã xảy ra lỗi, vui lòng thử lại." });
     }
   });
 
