@@ -227,6 +227,7 @@ const handleSocketEvents = (io, socket) => {
           sent: false,
           text: msg.text,
           guest: senderInfo,
+          user: senderInfo,
           system: msg.system,
           image: msg.image,
           video: msg.video,
