@@ -37,7 +37,7 @@ const handleSocketEvents = (io, socket) => {
 
           // Lấy tin nhắn mới nhất trong phòng
           const latestMessage = await MessageModel.findOne({ room: room._id })
-            .sort({ createdAt: 1 }) // Sắp xếp theo thời gian mới nhất
+            .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
             .populate({
               path: "sender",
               select: "name _id photos", // Lấy thông tin người gửi
@@ -101,7 +101,7 @@ const handleSocketEvents = (io, socket) => {
 
       // Lấy tất cả tin nhắn của phòng chat và sắp xếp theo thời gian
       const messages = await MessageModel.find({ room: room._id })
-        .sort({ createdAt: 1 }) // Sắp xếp theo thời gian tăng dần (hoặc -1 nếu muốn giảm dần)
+        .sort({ createdAt: -1 }) // Sắp xếp theo thời gian tăng dần (hoặc -1 nếu muốn giảm dần)
         .populate({
           path: "sender",
           select: "name _id photos", // Lấy thông tin người gửi
