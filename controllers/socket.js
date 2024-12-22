@@ -114,7 +114,7 @@ const handleSocketEvents = (io, socket) => {
       const formattedMessages = messages.map((msg) => {
         const senderInfo = msg.sender
           ? {
-              id: msg.sender._id,
+              id: msg.sender._id.toString(),
               name: msg.sender.name,
               avatar: msg.sender.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
             }
@@ -122,7 +122,7 @@ const handleSocketEvents = (io, socket) => {
 
         const receiverInfo = msg.receiver
           ? {
-              id: msg.receiver._id,
+              id: msg.receiver._id.toString(),
               name: msg.receiver.name,
               avatar: msg.receiver.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
             }
@@ -137,7 +137,7 @@ const handleSocketEvents = (io, socket) => {
           text: msg.text,
           user: senderInfo && senderInfo.id === userId ? senderInfo : null,
           guest:
-            receiverInfo && receiverInfo.id === guestId ? receiverInfo : null,
+            receiverInfo && receiverInfo.id === userId ? receiverInfo : null,
           system: msg.system,
           image: msg.image,
           video: msg.video,
