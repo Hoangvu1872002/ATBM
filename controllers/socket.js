@@ -1,5 +1,6 @@
 const Message = require("../models/message"); // Model Message
-const Room = require("../models/room"); // Model Room
+const RoomModel = require("../models/room");
+const UserModel = require("../models/user"); // Model Room
 
 const handleSocketEvents = (io, socket) => {
   socket.on("getChatList", async (data) => {
