@@ -2,12 +2,10 @@ const Message = require("../models/message"); // Model Message
 const Room = require("../models/room"); // Model Room
 
 const handleSocketEvents = (io, socket) => {
-  socket.on("getChatList", async () => {
+  socket.on("getChatList", async (data) => {
     try {
-      const { _id } = req.user; // Lấy userId từ token
-
       // Tìm tất cả các phòng chat mà người dùng tham gia và lấy thông tin người dùng tham gia trong từng phòng chat
-      const user = await UserModel.findById(_id).populate({
+      const user = await UserModel.findById(data.userId).populate({
         path: "roomIDs", // Tên trường chứa các phòng chat của người dùng
         populate: {
           path: "userIDs", // Tên trường chứa userIDs trong mỗi phòng chat
