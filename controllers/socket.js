@@ -62,7 +62,8 @@ const handleSocketEvents = (io, socket) => {
               time: latestMessage.createdAt,
               isNewMessage: latestMessage.status,
               avatar: opponent.photos?.[0] || null, // Lấy ảnh đại diện đầu tiên (nếu có)
-              userIsSendMes: latestMessage.sender._id.toString() === userId, // So sánh chính xác
+              userIsSendMes:
+                latestMessage.sender._id.toString() === userId ? true : false, // So sánh chính xác
             };
           }
 
