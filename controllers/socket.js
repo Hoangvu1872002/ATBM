@@ -135,12 +135,9 @@ const handleSocketEvents = (io, socket) => {
           received: true,
           sent: false,
           text: msg.text,
-          user:
-            senderInfo && senderInfo._id === userId ? senderInfo : receiverInfo,
+          user: senderInfo && senderInfo._id === userId ? senderInfo : null,
           guest:
-            receiverInfo && receiverInfo._id === userId
-              ? receiverInfo
-              : senderInfo,
+            receiverInfo && receiverInfo._id === userId ? receiverInfo : null,
           system: msg.system,
           image: msg.image,
           video: msg.video,
