@@ -120,7 +120,7 @@ const handleSocketEvents = (io, socket) => {
           sent: false,
           text: msg.text,
           user:
-            msg.sender === userId
+            msg.sender._id === userId
               ? {
                   id: msg.sender._id,
                   name: msg.sender.name,
@@ -128,7 +128,7 @@ const handleSocketEvents = (io, socket) => {
                 }
               : null, // Nếu không có sender (tin nhắn hệ thống)
           guest:
-            msg.receiver === guestId
+            msg.receiver._id === guestId
               ? {
                   id: msg.receiver._id,
                   name: msg.receiver.name,
