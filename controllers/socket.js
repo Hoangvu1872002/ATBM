@@ -77,7 +77,10 @@ const handleSocketEvents = (io, socket) => {
       // Loại bỏ các giá trị null trong mảng chatList
       const filteredChatList = chatList.filter((item) => item !== null);
 
-      filteredChatList.reverse();
+      // Sắp xếp lại theo thời gian mới nhất
+      filteredChatList.sort((a, b) => {
+        return new Date(b.time) - new Date(a.time);
+      });
 
       // Trả kết quả về client
       socket.emit("getChatList", { chatList: filteredChatList });
