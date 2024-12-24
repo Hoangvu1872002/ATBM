@@ -135,9 +135,9 @@ const handleSocketEvents = (io, socket) => {
           received: true,
           sent: false,
           text: msg.text,
-          user: senderInfo && senderInfo._id === userId ? senderInfo : null,
-          guest:
-            receiverInfo && receiverInfo._id === userId ? receiverInfo : null,
+          user: senderInfo,
+          // guest:
+          //   receiverInfo && receiverInfo._id === userId ? receiverInfo : null,
           system: msg.system,
           image: msg.image,
           video: msg.video,
@@ -209,6 +209,10 @@ const handleSocketEvents = (io, socket) => {
 
       // Lưu tin nhắn vào cơ sở dữ liệu
       const savedMessage = await newMessage.save();
+      await savedMessage.populate({
+        path: "sender",
+        select: "_id name photos", // Chỉ lấy các trường cần thiết
+      });
 
       const formattedMessage = (msg) => {
         const senderInfo = msg.sender
@@ -226,7 +230,7 @@ const handleSocketEvents = (io, socket) => {
           received: true,
           sent: false,
           text: msg.text,
-          guest: senderInfo,
+          // guest: senderInfo,
           user: senderInfo,
           system: msg.system,
           image: msg.image,

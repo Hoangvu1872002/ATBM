@@ -21,7 +21,6 @@ var userSchema = new mongoose.Schema(
     weight: { type: Number },
     latitude: { type: Number },
     longitude: { type: Number },
-
     listDislike: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     listLike: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     listMatch: [{ type: mongoose.Types.ObjectId, ref: "User" }],
