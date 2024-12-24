@@ -254,7 +254,7 @@ const handleSocketEvents = (io, socket) => {
 
   socket.on("revoked_message", async (data) => {
     try {
-      const { messageId, userId } = data; // messageId: id của tin nhắn cần thu hồi, userId: id của người yêu cầu thu hồi
+      const { messageId, userId, guestId } = data; // messageId: id của tin nhắn cần thu hồi, userId: id của người yêu cầu thu hồi
 
       // Tìm tin nhắn trong cơ sở dữ liệu
       const message = await MessageModel.findById(messageId);
@@ -278,10 +278,14 @@ const handleSocketEvents = (io, socket) => {
 
       // Thông báo cho các client (kể cả người gửi và người nhận) về việc thu hồi tin nhắn
       io.emit("message_revoked", {
+        userId,
+        guestId,
         messageId,
         status: "revoked",
       });
       socket.emit("message_revoked", {
+        userId,
+        guestId,
         messageId,
         status: "revoked",
       });
