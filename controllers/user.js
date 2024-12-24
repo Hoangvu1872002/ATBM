@@ -622,6 +622,110 @@ const getUserInfo = asyncHandler(async (req, res) => {
   }
 });
 
+const getUserNearBy = asyncHandler(async (req, res) => {
+  try {
+    const radius = 2;
+    const { latitude, longitude } = req.body;
+    const { _id } = req.user;
+
+    if (!latitude || !longitude) {
+      return res.status(400).json({ error: "Vui lòng cung cấp tọa độ." });
+    }
+
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+
+    const currentUser = await userModel
+      .findById(_id)
+      .select("listLike listDislike listMatch");
+    if (!currentUser) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng." });
+    }
+
+    // Lấy tất cả người dùng
+    const users = await userModel
+      .find({
+        _id: {
+          $nin: [
+            ...currentUser.listLike,
+            ...currentUser.listDislike,
+            ...currentUser.listMatch,
+            _id,
+          ],
+        }, // Lọc bỏ những người trong danh sách
+        latitude: { $ne: null }, // Lọc bỏ người dùng không có tọa độ
+        longitude: { $ne: null },
+      })
+      .select("_id photos latitude longitude");
+
+    // Lọc người dùng theo bán kính
+    const nearbyUsers = users.filter((user) => {
+      if (!user.latitude || !user.longitude) return false; // Bỏ qua nếu không có tọa độ
+      const distance = getDistanceFromLatLonInKm(
+        lat,
+        lon,
+        user.latitude,
+        user.longitude
+      );
+      return distance <= radius;
+    });
+
+    // Định dạng lại kết quả trả về
+    const response = nearbyUsers.map((user) => ({
+      _id: user._id,
+      photo: user.photos[0] || null, // Lấy ảnh đầu tiên (nếu có)
+      latitude: user.latitude,
+      longitude: user.longitude,
+    }));
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Lỗi khi tìm kiếm user:", error);
+    return res
+      .status(500)
+      .json({ error: "Lỗi máy chủ. Vui lòng thử lại sau." });
+  }
+});
+
+const updateUserLocation = asyncHandler(async (req, res) => {
+  try {
+    const { _id } = req.user; // Lấy userId từ route params
+    const { latitude, longitude } = req.body; // Lấy tọa độ từ body request
+
+    // Kiểm tra đầu vào
+    if (latitude === undefined || longitude === undefined) {
+      return res
+        .status(400)
+        .json({ error: "Latitude và Longitude là bắt buộc." });
+    }
+
+    // Tìm và cập nhật vị trí của người dùng
+    const user = await userModel.findByIdAndUpdate(
+      _id,
+      { latitude, longitude },
+      { new: true, runValidators: true } // Trả về user sau khi cập nhật
+    );
+
+    // Nếu không tìm thấy user
+    if (!user) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng." });
+    }
+
+    // Trả về thông tin người dùng đã cập nhật
+    res.status(200).json({
+      message: "Cập nhật vị trí thành công.",
+      user: {
+        id: user._id,
+        latitude: user.latitude,
+        longitude: user.longitude,
+      },
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật vị trí:", error);
+    res.status(500).json({ error: "Đã xảy ra lỗi máy chủ." });
+  }
+});
+
 module.exports = {
   removeFromListLike,
   getUserInfo,
@@ -636,4 +740,6 @@ module.exports = {
   getUsersInDislikeList,
   getUsersInMatchList,
   getUsersWhoLikedMe,
+  getUserNearBy,
+  updateUserLocation,
 };

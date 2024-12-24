@@ -252,10 +252,47 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
-  // Thêm socket vào phòng chat
-  socket.on("join_room", (roomId) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
+  socket.on("revoked_message", async (data) => {
+    try {
+      const { messageId, userId } = data; // messageId: id của tin nhắn cần thu hồi, userId: id của người yêu cầu thu hồi
+
+      // Tìm tin nhắn trong cơ sở dữ liệu
+      const message = await MessageModel.findById(messageId);
+
+      if (!message) {
+        return socket.emit("revoked_message_error", {
+          error: "Tin nhắn không tồn tại.",
+        });
+      }
+
+      // Kiểm tra nếu người yêu cầu thu hồi là người gửi tin nhắn
+      if (message.sender.toString() !== userId) {
+        return socket.emit("revoked_message_error", {
+          error: "Bạn không thể thu hồi tin nhắn này.",
+        });
+      }
+
+      // Cập nhật trạng thái của tin nhắn thành "revoked"
+      message.status = "revoked";
+      await message.save();
+
+      // Thông báo cho các client (kể cả người gửi và người nhận) về việc thu hồi tin nhắn
+      io.emit("message_revoked", {
+        messageId,
+        status: "revoked",
+      });
+      socket.emit("message_revoked", {
+        messageId,
+        status: "revoked",
+      });
+
+      console.log("Tin nhắn đã bị thu hồi", messageId);
+    } catch (error) {
+      console.error("Lỗi khi thu hồi tin nhắn:", error);
+      socket.emit("revoked_message_error", {
+        error: "Đã có lỗi xảy ra. Vui lòng thử lại.",
+      });
+    }
   });
 
   socket.on("disconnect", () => {
