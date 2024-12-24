@@ -2,6 +2,7 @@ const userModel = require("../models/user");
 const RoomModel = require("../models/room");
 const MessageModel = require("../models/message");
 const mongoose = require("mongoose");
+import { getDistanceFromLatLonInKm } from "../ultils/haversine";
 
 const asyncHandler = require("express-async-handler");
 
@@ -647,7 +648,7 @@ const getUserNearBy = asyncHandler(async (req, res) => {
       .find({
         _id: {
           $nin: [
-            ...currentUser.listLike,
+            // ...currentUser.listLike,
             ...currentUser.listDislike,
             ...currentUser.listMatch,
             _id,
