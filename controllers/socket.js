@@ -258,9 +258,9 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
-  socket.on("revoked_message", async (data) => {
+  socket.on("recall_message", async (data) => {
     try {
-      const { messageId, userId, guestId } = data; // messageId: id của tin nhắn cần thu hồi, userId: id của người yêu cầu thu hồi
+      const { messageId } = data; // messageId: id của tin nhắn cần thu hồi, userId: id của người yêu cầu thu hồi
 
       // Tìm tin nhắn trong cơ sở dữ liệu
       const message = await MessageModel.findById(messageId);
@@ -271,30 +271,12 @@ const handleSocketEvents = (io, socket) => {
         });
       }
 
-      // Kiểm tra nếu người yêu cầu thu hồi là người gửi tin nhắn
-      if (message.sender.toString() !== userId) {
-        return socket.emit("revoked_message_error", {
-          error: "Bạn không thể thu hồi tin nhắn này.",
-        });
-      }
-
       // Cập nhật trạng thái của tin nhắn thành "revoked"
-      message.status = "revoked";
+      message.revoked = true;
       await message.save();
 
       // Thông báo cho các client (kể cả người gửi và người nhận) về việc thu hồi tin nhắn
-      io.emit("message_revoked", {
-        userId,
-        guestId,
-        messageId,
-        status: "revoked",
-      });
-      socket.emit("message_revoked", {
-        userId,
-        guestId,
-        messageId,
-        status: "revoked",
-      });
+      io.emit("update_messages");
 
       console.log("Tin nhắn đã bị thu hồi", messageId);
     } catch (error) {
