@@ -113,7 +113,7 @@ const addToListLike = asyncHandler(async (req, res) => {
     const inUserListLike = user.listLike.includes(userIdToAdd);
 
     // console.log(inTargetUserListLike);
-
+    let roomId;
     if (inTargetUserListLike) {
       // Nếu đối phương đã thích mình, loại bỏ mình khỏi listLike của họ
       targetUser.listLike = targetUser.listLike.filter(
@@ -143,6 +143,8 @@ const addToListLike = asyncHandler(async (req, res) => {
       const newRoom = new RoomModel({ userIDs: userIDsObject });
       const check = await newRoom.save();
 
+      roomId = check._id;
+
       user.roomIDs.push(check._id);
       targetUser.roomIDs.push(check._id);
 
@@ -171,6 +173,7 @@ const addToListLike = asyncHandler(async (req, res) => {
     res.status(200).json({
       success: true,
       mes: "User added to listLike or listMatch successfully!",
+      roomId,
       data: {
         listLike: user.listLike,
         listMatch: user.listMatch,
@@ -644,20 +647,19 @@ const getUserNearBy = asyncHandler(async (req, res) => {
     }
 
     // Lấy tất cả người dùng
-    const users = await userModel
-      .find({
-        _id: {
-          $nin: [
-            // ...currentUser.listLike,
-            ...currentUser.listDislike,
-            ...currentUser.listMatch,
-            _id,
-          ],
-        }, // Lọc bỏ những người trong danh sách
-        latitude: { $ne: null }, // Lọc bỏ người dùng không có tọa độ
-        longitude: { $ne: null },
-      })
-      .select("_id photos latitude longitude");
+    const users = await userModel.find({
+      _id: {
+        $nin: [
+          // ...currentUser.listLike,
+          ...currentUser.listDislike,
+          ...currentUser.listMatch,
+          _id,
+        ],
+      }, // Lọc bỏ những người trong danh sách
+      latitude: { $ne: null }, // Lọc bỏ người dùng không có tọa độ
+      longitude: { $ne: null },
+    });
+    // .select("_id photos latitude longitude");
 
     // Lọc người dùng theo bán kính
     const nearbyUsers = users.filter((user) => {
@@ -728,6 +730,90 @@ const updateUserLocation = asyncHandler(async (req, res) => {
   }
 });
 
+const getAllUsersFilter = asyncHandler(async (req, res) => {
+  const { _id } = req.user; // ID của user hiện tại
+  const { gender, minAge, maxAge } = req.body; // Lấy điều kiện lọc từ query params
+
+  // Kiểm tra bắt buộc các tham số
+  if (!gender || !minAge || !maxAge) {
+    return res.status(400).json({
+      success: false,
+      mes: "Missing required filters: gender, minAge, and maxAge",
+    });
+  }
+
+  try {
+    // Tìm thông tin người dùng hiện tại
+    const user = await userModel.findById(_id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        mes: "User not found!",
+      });
+    }
+
+    // Lọc danh sách users ngoại trừ những người có trong listLike, listDislike, và listMatch
+    const excludedUsers = [
+      _id,
+      ...user.listLike,
+      ...user.listDislike,
+      ...user.listMatch,
+    ];
+
+    // Tính toán khoảng năm sinh dựa trên minAge và maxAge
+    const currentYear = new Date().getFullYear();
+    const minYearOfBirth = currentYear - maxAge; // Năm sinh nhỏ nhất
+    const maxYearOfBirth = currentYear - minAge; // Năm sinh lớn nhất
+
+    // Tìm tất cả users với điều kiện lọc
+    const users = await userModel
+      .find({
+        _id: { $nin: excludedUsers }, // Loại bỏ các ID trong excludedUsers
+        gender, // Lọc theo giới tính
+        dateOfBirth: {
+          // Lọc theo khoảng tuổi
+          $gte: new Date(`${minYearOfBirth}-01-01`), // Sinh sau ngày 1/1 của năm nhỏ nhất
+          $lte: new Date(`${maxYearOfBirth}-12-31`), // Sinh trước ngày 31/12 của năm lớn nhất
+        },
+      })
+      .select("-password"); // Loại bỏ password khỏi kết quả trả về
+
+    // Chuyển đổi dữ liệu người dùng thành định dạng mong muốn
+    const transformUsers = (users) => {
+      return users.map((user) => {
+        const { _id, name, introduce, dateOfBirth, city, photos } = user;
+
+        return {
+          ...user,
+          userID: _id, // Đổi `_id` thành `userID`
+          name, // Tên người dùng
+          introduce, // Lời giới thiệu
+          age: currentYear - new Date(dateOfBirth).getFullYear(), // Tính tuổi
+          address: city, // Thành phố
+          listImages: photos, // Danh sách ảnh
+        };
+      });
+    };
+
+    const data = transformUsers(users.map((user) => user._doc));
+
+    // Trả về kết quả
+    res.status(200).json({
+      success: true,
+      mes: "Users fetched successfully!",
+      data,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách người dùng:", error.message);
+
+    res.status(500).json({
+      success: false,
+      mes: "Internal Server Error",
+    });
+  }
+});
+
 module.exports = {
   removeFromListLike,
   getUserInfo,
@@ -744,4 +830,5 @@ module.exports = {
   getUsersWhoLikedMe,
   getUserNearBy,
   updateUserLocation,
+  getAllUsersFilter,
 };
