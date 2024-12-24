@@ -54,6 +54,8 @@ const handleSocketEvents = (io, socket) => {
               text = "Tệp đính kèm.";
             }
 
+            if (latestMessage.revoked) text = "Tin nhắn đã bị thu hồi.";
+
             // Trả thông tin phòng chat
             return {
               userID: opponent._id,
@@ -137,6 +139,7 @@ const handleSocketEvents = (io, socket) => {
           received: true,
           sent: false,
           text: msg.text,
+          revoked: msg.revoked,
           user: senderInfo,
           // guest:
           //   receiverInfo && receiverInfo._id === userId ? receiverInfo : null,
@@ -232,6 +235,7 @@ const handleSocketEvents = (io, socket) => {
           received: true,
           sent: false,
           text: msg.text,
+          revoked: msg.revoked,
           // guest: senderInfo,
           user: senderInfo,
           system: msg.system,
