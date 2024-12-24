@@ -8,15 +8,13 @@ const handleSocketEvents = (io, socket) => {
       const userId = data.userId;
 
       // Lấy tất cả các phòng mà người dùng tham gia
-      const user = await UserModel.findById(userId)
-        .populate({
-          path: "roomIDs",
-          populate: {
-            path: "userIDs",
-            select: "name _id photos", // Chỉ lấy các thông tin cần thiết
-          },
-        })
-        .sort({ createdAt: 1 });
+      const user = await UserModel.findById(userId).populate({
+        path: "roomIDs",
+        populate: {
+          path: "userIDs",
+          select: "name _id photos", // Chỉ lấy các thông tin cần thiết
+        },
+      });
 
       if (!user) {
         return socket.emit("getChatList", {
@@ -76,6 +74,8 @@ const handleSocketEvents = (io, socket) => {
 
       // Loại bỏ các giá trị null trong mảng chatList
       const filteredChatList = chatList.filter((item) => item !== null);
+
+      filteredChatList.reverse();
 
       // Trả kết quả về client
       socket.emit("getChatList", { chatList: filteredChatList });
