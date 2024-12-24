@@ -8,13 +8,15 @@ const handleSocketEvents = (io, socket) => {
       const userId = data.userId;
 
       // Lấy tất cả các phòng mà người dùng tham gia
-      const user = await UserModel.findById(userId).populate({
-        path: "roomIDs",
-        populate: {
-          path: "userIDs",
-          select: "name _id photos", // Chỉ lấy các thông tin cần thiết
-        },
-      });
+      const user = await UserModel.findById(userId)
+        .populate({
+          path: "roomIDs",
+          populate: {
+            path: "userIDs",
+            select: "name _id photos", // Chỉ lấy các thông tin cần thiết
+          },
+        })
+        .sort({ createdAt: 1 });
 
       if (!user) {
         return socket.emit("getChatList", {
