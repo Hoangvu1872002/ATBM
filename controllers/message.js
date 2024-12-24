@@ -126,4 +126,4 @@ const getMessagesInRoom = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { getMessagesInRoom };
+module.exports = { getMessagesInRoom, addMessage };
