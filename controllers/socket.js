@@ -303,6 +303,10 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
+  socket.on("update_rows", () => {
+    io.emit("update_rows");
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
