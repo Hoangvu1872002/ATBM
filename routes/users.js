@@ -14,6 +14,7 @@ const {
   getUsersWhoLikedMe,
   getCurrentInfo,
   updateUserLocation,
+  getUserNearBy,
 } = require("../controllers/user");
 const { verifyAccessToken } = require("../middlewares/verifyToken");
 const uploadImage = require("../config/cloudinary.config");
@@ -44,5 +45,6 @@ router.get(
 router.get("/all-user-in-listmatch", verifyAccessToken, getUsersInMatchList);
 router.get("/all-user-like-me", verifyAccessToken, getUsersWhoLikedMe);
 router.put("/location", verifyAccessToken, updateUserLocation);
+router.post("/get-user-nearby", verifyAccessToken, getUserNearBy);
 
 module.exports = router;
