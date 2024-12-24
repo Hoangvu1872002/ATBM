@@ -37,7 +37,7 @@ const handleSocketEvents = (io, socket) => {
 
           // Lấy tin nhắn mới nhất trong phòng
           const latestMessage = await MessageModel.findOne({ room: room._id })
-            .sort({ createdAt: 1 }) // Sắp xếp theo thời gian mới nhất
+            .sort({ createdAt: -1 }) // Sắp xếp theo thời gian mới nhất
             .populate({
               path: "sender",
               select: "name _id photos", // Lấy thông tin người gửi
