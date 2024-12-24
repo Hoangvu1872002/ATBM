@@ -2,7 +2,7 @@ const userModel = require("../models/user");
 const RoomModel = require("../models/room");
 const MessageModel = require("../models/message");
 const mongoose = require("mongoose");
-import { getDistanceFromLatLonInKm } from "../ultils/haversine";
+const { getDistanceFromLatLonInKm } = require("../ultils/haversine");
 
 const asyncHandler = require("express-async-handler");
 
@@ -677,6 +677,7 @@ const getUserNearBy = asyncHandler(async (req, res) => {
       photo: user.photos[0] || null, // Lấy ảnh đầu tiên (nếu có)
       latitude: user.latitude,
       longitude: user.longitude,
+      userInfo: user,
     }));
 
     return res.status(200).json(response);
