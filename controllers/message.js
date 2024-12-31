@@ -62,40 +62,6 @@ const addMessage = asyncHandler(async (req, res) => {
   }
 });
 
-const revokeMessage = asyncHandler(async (req, res) => {
-  try {
-    const { messageId } = req.body; // Lấy messageId từ tham số URL
-    const { _id } = req.user; // Lấy userId từ xác thực token
-
-    // Kiểm tra xem tin nhắn có tồn tại không
-    const message = await MessageModel.findById(messageId);
-    if (!message) {
-      return res.status(404).json({
-        mes: "Tin nhắn không tồn tại.",
-      });
-    }
-
-    // Kiểm tra xem người gửi có phải là người thu hồi tin nhắn không
-    if (!message.sender.equals(_id)) {
-      return res.status(403).json({
-        mes: "Bạn chỉ có thể thu hồi tin nhắn của chính mình.",
-      });
-    }
-
-    // Đánh dấu tin nhắn là đã thu hồi
-    message.revoked = true;
-    await message.save();
-
-    return res.status(200).json({
-      mes: "Tin nhắn đã được thu hồi thành công.",
-      data: message,
-    });
-  } catch (error) {
-    console.error("Lỗi khi thu hồi tin nhắn:", error.message);
-    return res.status(500).json({ mes: "Lỗi máy chủ khi thu hồi tin nhắn." });
-  }
-});
-
 const getMessagesInRoom = asyncHandler(async (req, res) => {
   try {
     const { roomId } = req.body; // Lấy roomId từ tham số URL

@@ -15,6 +15,10 @@ const {
   getCurrentInfo,
   updateUserLocation,
   getUserNearBy,
+  updateUserFilter,
+  getUserSessions,
+  blockUser,
+  unblockUser,
 } = require("../controllers/user");
 const { verifyAccessToken } = require("../middlewares/verifyToken");
 const uploadImage = require("../config/cloudinary.config");
@@ -46,5 +50,8 @@ router.get("/all-user-in-listmatch", verifyAccessToken, getUsersInMatchList);
 router.get("/all-user-like-me", verifyAccessToken, getUsersWhoLikedMe);
 router.put("/location", verifyAccessToken, updateUserLocation);
 router.post("/get-user-nearby", verifyAccessToken, getUserNearBy);
-
+router.put("/update-user-filter", verifyAccessToken, updateUserFilter);
+router.get("/get-user-sessions", verifyAccessToken, getUserSessions);
+router.post("/block-user", verifyAccessToken, blockUser);
+router.post("/unblock-user", verifyAccessToken, unblockUser);
 module.exports = router;

@@ -1,6 +1,7 @@
 const MessageModel = require("../models/message"); // Model Message
 const RoomModel = require("../models/room");
 const UserModel = require("../models/user"); // Model Room
+const Session = require("../models/session");
 
 const handleSocketEvents = (io, socket) => {
   socket.on("getChatList", async (data) => {
@@ -294,12 +295,53 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
+  socket.on("registerSession", async ({ userId, deviceId }) => {
+    if (!userId || !deviceId) return;
+
+    try {
+      await Session.updateOne(
+        { userId, deviceId },
+        { socketId: socket.id },
+        { upsert: true } // Thêm mới nếu không tồn tại
+      );
+      console.log(
+        `Session registered for userId: ${userId}, deviceId: ${deviceId}`
+      );
+    } catch (error) {
+      console.error("Error registering session:", error);
+    }
+  });
+
+  socket.on("forceDisconnect", async ({ userId, deviceId }) => {
+    try {
+      const session = await Session.findOneAndDelete({ userId, deviceId });
+
+      if (session && session.socketId) {
+        // Gửi sự kiện ngắt kết nối tới thiết bị
+        io.to(session.socketId).emit("forceLogout");
+        console.log(`Force logout event sent to socketId: ${session.socketId}`);
+      } else {
+        console.log(
+          `No active session found for userId: ${userId}, deviceId: ${deviceId}`
+        );
+      }
+    } catch (error) {
+      console.error("Error forcing disconnect:", error);
+    }
+  });
+
   socket.on("update_rows", () => {
     io.emit("update_rows");
   });
 
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+  socket.on("disconnect", async () => {
+    try {
+      // Cập nhật socketId thành null khi client mất kết nối
+      await Session.updateOne({ socketId: socket.id }, { socketId: null });
+      console.log(`SocketId ${socket.id} has been removed from session.`);
+    } catch (error) {
+      console.error("Error updating session on disconnect:", error);
+    }
   });
 };
 

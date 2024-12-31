@@ -15,6 +15,11 @@ var userSchema = new mongoose.Schema(
     gender: { type: String },
     photos: [{ type: String }],
     introduce: { type: String },
+    filter: {
+      ageMax: { type: Number },
+      ageMin: { type: Number },
+      gender: { type: String },
+    },
     hometown: { type: String },
     hobbies: [{ type: String }],
     height: { type: Number },
@@ -23,6 +28,7 @@ var userSchema = new mongoose.Schema(
     longitude: { type: Number },
     listDislike: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     listLike: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+    listBlock: [{ type: mongoose.Types.ObjectId, ref: "User" }],
     listMatch: [{ type: mongoose.Types.ObjectId, ref: "User" }],
   },
   {
