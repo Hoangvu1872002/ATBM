@@ -9,11 +9,23 @@ const asyncHandler = require("express-async-handler");
 
 const getCurrentInfo = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  const user = await userModel.findById(_id);
-  res.status(200).json({
-    success: true,
-    data: user,
-  });
+  const { deviceId } = req.body;
+
+  try {
+    const user = await userModel.findById(_id);
+    const session = await Session.findOne({ _id, deviceId });
+
+    if (session) {
+      res.status(200).json({ success: true, data: user });
+    } else {
+      res
+        .status(404)
+        .json({ success: false, mes: "Session or userId not found." });
+    }
+  } catch (error) {
+    console.error("Error in check-session:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
 });
 
 const updateInfo = asyncHandler(async (req, res) => {
