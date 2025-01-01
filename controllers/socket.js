@@ -298,7 +298,7 @@ const handleSocketEvents = (io, socket) => {
   socket.on(
     "registerSession",
     async ({ userId, deviceId, deviceName, address }) => {
-      if ((!userId || !deviceId, deviceName, address)) return;
+      if (!userId || !deviceId || !deviceName || !address) return;
 
       try {
         await Session.updateOne(
@@ -377,6 +377,45 @@ const handleSocketEvents = (io, socket) => {
       io.emit("userBlocked");
     } catch (error) {
       console.error("Error blocking user:", error);
+    }
+  });
+
+  socket.on("unblockUser", async (data) => {
+    try {
+      const { _id, blockedUserId } = data; // _id là ID của người dùng hiện tại, blockedUserId là ID của người dùng bị bỏ block
+
+      if (!_id || !blockedUserId) {
+        console.log("User ID or blockedUserId is missing");
+        return;
+      }
+
+      // Tìm người dùng hiện tại
+      const user = await UserModel.findById(_id);
+      if (!user) {
+        console.log("User not found!");
+        return;
+      }
+
+      // Kiểm tra xem người dùng có trong danh sách block không
+      if (!user.listBlock.includes(blockedUserId)) {
+        console.log("User is not blocked");
+        return;
+      }
+
+      // Loại bỏ người dùng khỏi danh sách block
+      user.listBlock = user.listBlock.filter(
+        (id) => id.toString() !== blockedUserId
+      );
+
+      // Lưu người dùng sau khi cập nhật danh sách block
+      await user.save();
+
+      console.log("User unblocked successfully!");
+
+      // Thông báo cho các socket khác nếu cần
+      io.to(blockedUserId).emit("userUnblocked", { unblockerId: _id });
+    } catch (error) {
+      console.error("Error unblocking user:", error);
     }
   });
 
