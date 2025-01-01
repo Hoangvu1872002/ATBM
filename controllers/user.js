@@ -13,7 +13,7 @@ const getCurrentInfo = asyncHandler(async (req, res) => {
 
   try {
     const user = await userModel.findById(_id);
-    const session = await Session.findOne({ _id, deviceId });
+    const session = await Session.findOne({ userId: _id, deviceId });
 
     if (session && user) {
       res.status(200).json({ success: true, data: user });
