@@ -319,6 +319,7 @@ const handleSocketEvents = (io, socket) => {
       if (session && session.socketId) {
         // Gửi sự kiện ngắt kết nối tới thiết bị
         io.to(session.socketId).emit("forceLogout");
+        socket.to(session.socketId).emit("forceLogout");
         console.log(`Force logout event sent to socketId: ${session.socketId}`);
       } else {
         console.log(
