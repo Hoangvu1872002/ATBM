@@ -374,7 +374,7 @@ const handleSocketEvents = (io, socket) => {
       console.log("User blocked successfully!");
 
       // Thông báo cho các socket khác nếu cần
-      io.emit("userBlocked");
+      io.emit("userBlocked", { blockerId: _id, blockedUserId });
     } catch (error) {
       console.error("Error blocking user:", error);
     }
@@ -413,7 +413,7 @@ const handleSocketEvents = (io, socket) => {
       console.log("User unblocked successfully!");
 
       // Thông báo cho các socket khác nếu cần
-      io.to(blockedUserId).emit("userUnblocked", { unblockerId: _id });
+      io.emit("userUnblocked", { unblockerId: _id });
     } catch (error) {
       console.error("Error unblocking user:", error);
     }
