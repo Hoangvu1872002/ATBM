@@ -295,22 +295,25 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
-  socket.on("registerSession", async ({ userId, deviceId }) => {
-    if (!userId || !deviceId) return;
+  socket.on(
+    "registerSession",
+    async ({ userId, deviceId, deviceName, address }) => {
+      if ((!userId || !deviceId, deviceName, address)) return;
 
-    try {
-      await Session.updateOne(
-        { deviceId },
-        { socketId: socket.id, userId },
-        { upsert: true } // Thêm mới nếu không tồn tại
-      );
-      console.log(
-        `Session registered for userId: ${userId}, deviceId: ${deviceId}`
-      );
-    } catch (error) {
-      console.error("Error registering session:", error);
+      try {
+        await Session.updateOne(
+          { deviceId },
+          { socketId: socket.id, userId, deviceName, address },
+          { upsert: true } // Thêm mới nếu không tồn tại
+        );
+        console.log(
+          `Session registered for userId: ${userId}, deviceId: ${deviceId}`
+        );
+      } catch (error) {
+        console.error("Error registering session:", error);
+      }
     }
-  });
+  );
 
   socket.on("forceDisconnect", async ({ userId, deviceId }) => {
     try {
