@@ -891,11 +891,12 @@ const getAllUsersFilter = asyncHandler(async (req, res) => {
 
 const getUserSessions = asyncHandler(async (req, res) => {
   const { _id } = req.user; // ID của user hiện tại
+  const { deviceId } = req.body;
   try {
     const sessions = await Session.find({ _id });
 
     const filteredSessions = sessions.filter(
-      (session) => session.userId !== _id
+      (session) => session.deviceId !== deviceId
     );
 
     res.status(200).json(filteredSessions);
