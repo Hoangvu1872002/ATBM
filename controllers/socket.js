@@ -300,8 +300,8 @@ const handleSocketEvents = (io, socket) => {
 
     try {
       await Session.updateOne(
-        { userId, deviceId },
-        { socketId: socket.id },
+        { deviceId },
+        { socketId: socket.id, userId },
         { upsert: true } // Thêm mới nếu không tồn tại
       );
       console.log(

@@ -16,7 +16,7 @@ const login = asyncHandler(async (req, res) => {
     });
 
   // Lưu thông tin đăng nhập vào MongoDB
-  await Session.create({ userId, deviceId });
+  await Session.create({ mobile, deviceId });
 
   const response = await userModel.findOne({ mobile });
 
