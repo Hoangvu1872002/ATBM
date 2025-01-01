@@ -91,10 +91,106 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
+  // socket.on("getAllMessages", async (data) => {
+  //   const { userId, guestId } = data;
+
+  //   try {
+  //     // Tìm phòng chat có chứa cả hai userId và guestId
+  //     const room = await RoomModel.findOne({
+  //       userIDs: { $all: [userId, guestId] }, // Kiểm tra cả hai userId đều có trong phòng
+  //     });
+
+  //     if (!room) {
+  //       return socket.emit("getAllMessages", {
+  //         status: "error",
+  //         message: "Không tìm thấy phòng chat giữa hai người.",
+  //       });
+  //     }
+
+  //     // Lấy tất cả tin nhắn của phòng chat và sắp xếp theo thời gian
+  //     const messages = await MessageModel.find({ room: room._id })
+  //       .sort({ createdAt: -1 }) // Sắp xếp theo thời gian tăng dần (hoặc -1 nếu muốn giảm dần)
+  //       .populate({
+  //         path: "sender",
+  //         select: "name _id photos", // Lấy thông tin người gửi
+  //       })
+  //       .populate({
+  //         path: "receiver",
+  //         select: "name _id photos", // Lấy thông tin người nhận
+  //       });
+
+  //     const formattedMessages = messages.map((msg) => {
+  //       const senderInfo = msg.sender
+  //         ? {
+  //             _id: msg.sender._id.toString(),
+  //             name: msg.sender.name,
+  //             avatar: msg.sender.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+  //           }
+  //         : null;
+
+  //       const receiverInfo = msg.receiver
+  //         ? {
+  //             _id: msg.receiver._id.toString(),
+  //             name: msg.receiver.name,
+  //             avatar: msg.receiver.photos?.[0] || null, // Lấy ảnh đầu tiên hoặc null nếu không có
+  //           }
+  //         : null;
+
+  //       return {
+  //         _id: msg._id,
+  //         createdAt: msg.createdAt,
+  //         pending: false,
+  //         received: true,
+  //         sent: false,
+  //         text: msg.text,
+  //         revoked: msg.revoked,
+  //         user: senderInfo,
+  //         // guest:
+  //         //   receiverInfo && receiverInfo._id === userId ? receiverInfo : null,
+  //         system: msg.system,
+  //         image: msg.image,
+  //         video: msg.video,
+  //         file: msg.file,
+  //       };
+  //     });
+
+  //     // Trả về danh sách tin nhắn và thông tin phòng chat
+  //     socket.emit("getAllMessages", formattedMessages);
+  //   } catch (error) {
+  //     console.error("Lỗi khi lấy danh sách tin nhắn:", error);
+  //     socket.emit("getAllMessages", {
+  //       status: "error",
+  //       message: "Đã xảy ra lỗi khi lấy danh sách tin nhắn.",
+  //     });
+  //   }
+  // });
+
   socket.on("getAllMessages", async (data) => {
     const { userId, guestId } = data;
 
     try {
+      // Kiểm tra xem userId có bị guestId block hay không
+      const guest = await UserModel.findById(guestId);
+      if (!guest) {
+        return socket.emit("getAllMessages", {
+          status: "error",
+          message: "Người dùng khách không tồn tại.",
+        });
+      }
+
+      const isBlocked = guest.listBlock.includes(userId);
+
+      // Kiểm tra xem guestId có bị userId block hay không
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return socket.emit("getAllMessages", {
+          status: "error",
+          message: "Người dùng không tồn tại.",
+        });
+      }
+
+      const isBlock = user.listBlock.includes(guestId);
+
       // Tìm phòng chat có chứa cả hai userId và guestId
       const room = await RoomModel.findOne({
         userIDs: { $all: [userId, guestId] }, // Kiểm tra cả hai userId đều có trong phòng
@@ -104,6 +200,8 @@ const handleSocketEvents = (io, socket) => {
         return socket.emit("getAllMessages", {
           status: "error",
           message: "Không tìm thấy phòng chat giữa hai người.",
+          isBlocked,
+          isBlock,
         });
       }
 
@@ -145,8 +243,6 @@ const handleSocketEvents = (io, socket) => {
           text: msg.text,
           revoked: msg.revoked,
           user: senderInfo,
-          // guest:
-          //   receiverInfo && receiverInfo._id === userId ? receiverInfo : null,
           system: msg.system,
           image: msg.image,
           video: msg.video,
@@ -154,8 +250,13 @@ const handleSocketEvents = (io, socket) => {
         };
       });
 
-      // Trả về danh sách tin nhắn và thông tin phòng chat
-      socket.emit("getAllMessages", formattedMessages);
+      // Trả về danh sách tin nhắn, thông tin phòng chat, và trạng thái block
+      socket.emit("getAllMessages", {
+        status: "success",
+        messages: formattedMessages,
+        isBlocked,
+        isBlock,
+      });
     } catch (error) {
       console.error("Lỗi khi lấy danh sách tin nhắn:", error);
       socket.emit("getAllMessages", {
@@ -413,7 +514,7 @@ const handleSocketEvents = (io, socket) => {
       console.log("User unblocked successfully!");
 
       // Thông báo cho các socket khác nếu cần
-      io.emit("userUnblocked", { unblockerId: _id });
+      io.emit("userUnblocked", { blockerId: _id, blockedUserId });
     } catch (error) {
       console.error("Error unblocking user:", error);
     }
