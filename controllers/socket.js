@@ -335,6 +335,48 @@ const handleSocketEvents = (io, socket) => {
     io.emit("update_rows");
   });
 
+  socket.on("blockUser", async (data) => {
+    try {
+      const { _id, blockedUserId } = data; // _id là ID của người dùng hiện tại, blockedUserId là ID của người bị block
+
+      if (!_id || !blockedUserId) {
+        console.log("User ID or blockedUserId is missing");
+        return;
+      }
+
+      // Tìm người dùng hiện tại
+      const user = await UserModel.findById(_id);
+      if (!user) {
+        console.log("User not found!");
+        return;
+      }
+
+      // Kiểm tra xem người dùng đã bị block chưa
+      if (user.listBlock.includes(blockedUserId)) {
+        console.log("User is already blocked");
+        return;
+      }
+
+      // Kiểm tra xem người dùng bị block có tồn tại không
+      const blockedUser = await UserModel.findById(blockedUserId);
+      if (!blockedUser) {
+        console.log("Blocked user not found!");
+        return;
+      }
+
+      // Thêm người dùng vào danh sách block
+      user.listBlock.push(blockedUserId);
+      await user.save();
+
+      console.log("User blocked successfully!");
+
+      // Thông báo cho các socket khác nếu cần
+      io.emit("userBlocked");
+    } catch (error) {
+      console.error("Error blocking user:", error);
+    }
+  });
+
   socket.on("disconnect", async () => {
     try {
       // Cập nhật socketId thành null khi client mất kết nối

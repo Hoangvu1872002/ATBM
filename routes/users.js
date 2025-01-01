@@ -24,7 +24,7 @@ const { verifyAccessToken } = require("../middlewares/verifyToken");
 const uploadImage = require("../config/cloudinary.config");
 
 router.post("/get-current-info", verifyAccessToken, getCurrentInfo);
-router.get("/get-user-info", verifyAccessToken, getUserInfo);
+router.post("/get-user-info", verifyAccessToken, getUserInfo);
 router.post(
   "/update-info",
   verifyAccessToken,
