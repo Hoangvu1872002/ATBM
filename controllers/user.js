@@ -377,70 +377,8 @@ const removeFromListDislike = asyncHandler(async (req, res) => {
   }
 });
 
-// const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
-//   const { _id } = req.user; // ID của user hiện tại
-
-//   try {
-//     // Tìm thông tin người dùng hiện tại
-//     const user = await userModel.findById(_id);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         mes: "User not found!",
-//       });
-//     }
-
-//     // Lọc danh sách users ngoại trừ những người có trong listLike, listDislike, và listMatch
-//     const excludedUsers = [
-//       _id,
-//       ...user.listLike,
-//       ...user.listDislike,
-//       ...user.listMatch,
-//     ];
-
-//     // Tìm tất cả users nhưng loại bỏ những user trong danh sách excludedUsers
-//     const users = await userModel
-//       .find({
-//         _id: { $nin: excludedUsers },
-//       })
-//       .select("-password"); // Loại bỏ password khỏi kết quả
-
-//     const transformUsers = (users) => {
-//       return users.map((user) => {
-//         const { _id, name, introduce, dateOfBirth, city, photos } = user;
-
-//         return {
-//           ...user,
-//           userID: _id,
-//           name: name,
-//           introduce: introduce,
-//           age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
-//           address: city,
-//           listImages: photos,
-//           // ...user,
-//         };
-//       });
-//     };
-
-//     const data = transformUsers(users.map((user) => user._doc));
-
-//     res.status(200).json({
-//       success: true,
-//       mes: "Users fetched successfully!",
-//       data,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       mes: error.message || "Failed to fetch users.",
-//     });
-//   }
-// });
-
 const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
   const { _id } = req.user; // ID của user hiện tại
-  const { ageMax, ageMin, gender } = req.body.filter || {}; // Lọc theo filter nếu có
 
   try {
     // Tìm thông tin người dùng hiện tại
@@ -461,25 +399,12 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
       ...user.listMatch,
     ];
 
-    // Tạo điều kiện truy vấn thêm các filter
-    const filterConditions = {
-      _id: { $nin: excludedUsers }, // Loại bỏ các user đã có trong danh sách loại trừ
-    };
-
-    // Nếu có filter về độ tuổi, thêm vào điều kiện lọc
-    if (ageMax)
-      filterConditions["dateOfBirth"] = {
-        $gte: new Date().setFullYear(new Date().getFullYear() - ageMax),
-      };
-    if (ageMin)
-      filterConditions["dateOfBirth"] = {
-        ...filterConditions["dateOfBirth"],
-        $lte: new Date().setFullYear(new Date().getFullYear() - ageMin),
-      };
-    if (gender) filterConditions["gender"] = gender;
-
-    // Tìm tất cả users nhưng loại bỏ những user trong danh sách excludedUsers và áp dụng filter
-    const users = await userModel.find(filterConditions).select("-password"); // Loại bỏ password khỏi kết quả
+    // Tìm tất cả users nhưng loại bỏ những user trong danh sách excludedUsers
+    const users = await userModel
+      .find({
+        _id: { $nin: excludedUsers },
+      })
+      .select("-password"); // Loại bỏ password khỏi kết quả
 
     const transformUsers = (users) => {
       return users.map((user) => {
@@ -493,6 +418,7 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
           age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
           address: city,
           listImages: photos,
+          // ...user,
         };
       });
     };
@@ -511,6 +437,80 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
     });
   }
 });
+
+// const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
+//   const { _id } = req.user; // ID của user hiện tại
+//   const { ageMax, ageMin, gender } = req.body.filter || {}; // Lọc theo filter nếu có
+
+//   try {
+//     // Tìm thông tin người dùng hiện tại
+//     const user = await userModel.findById(_id);
+
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         mes: "User not found!",
+//       });
+//     }
+
+//     // Lọc danh sách users ngoại trừ những người có trong listLike, listDislike, và listMatch
+//     const excludedUsers = [
+//       _id,
+//       ...user.listLike,
+//       ...user.listDislike,
+//       ...user.listMatch,
+//     ];
+
+//     // Tạo điều kiện truy vấn thêm các filter
+//     const filterConditions = {
+//       _id: { $nin: excludedUsers }, // Loại bỏ các user đã có trong danh sách loại trừ
+//     };
+
+//     // Nếu có filter về độ tuổi, thêm vào điều kiện lọc
+//     if (ageMax)
+//       filterConditions["dateOfBirth"] = {
+//         $gte: new Date().setFullYear(new Date().getFullYear() - ageMax),
+//       };
+//     if (ageMin)
+//       filterConditions["dateOfBirth"] = {
+//         ...filterConditions["dateOfBirth"],
+//         $lte: new Date().setFullYear(new Date().getFullYear() - ageMin),
+//       };
+//     if (gender) filterConditions["gender"] = gender;
+
+//     // Tìm tất cả users nhưng loại bỏ những user trong danh sách excludedUsers và áp dụng filter
+//     const users = await userModel.find(filterConditions).select("-password"); // Loại bỏ password khỏi kết quả
+
+//     const transformUsers = (users) => {
+//       return users.map((user) => {
+//         const { _id, name, introduce, dateOfBirth, city, photos } = user;
+
+//         return {
+//           ...user,
+//           userID: _id,
+//           name: name,
+//           introduce: introduce,
+//           age: new Date().getFullYear() - new Date(dateOfBirth).getFullYear(),
+//           address: city,
+//           listImages: photos,
+//         };
+//       });
+//     };
+
+//     const data = transformUsers(users.map((user) => user._doc));
+
+//     res.status(200).json({
+//       success: true,
+//       mes: "Users fetched successfully!",
+//       data,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       mes: error.message || "Failed to fetch users.",
+//     });
+//   }
+// });
 
 const getUsersInLikeList = asyncHandler(async (req, res) => {
   const { _id } = req.user; // ID của user hiện tại
