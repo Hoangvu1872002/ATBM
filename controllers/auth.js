@@ -90,14 +90,15 @@ const checkSession = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
-  const { userId, deviceId } = req.body;
+  const { deviceId } = req.body;
+  const { _id } = req.user;
 
-  if (!userId || !deviceId) {
+  if (!deviceId) {
     return res.status(400).json({ mes: "userId and deviceId are required." });
   }
 
   try {
-    await Session.findOneAndDelete({ userId, deviceId });
+    await Session.findOneAndDelete({ _id, deviceId });
     res.status(200).json({ mes: "Logout successful." });
   } catch (error) {
     console.error("Error in /logout:", error);
