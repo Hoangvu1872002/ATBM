@@ -44,12 +44,12 @@ const updateInfo = asyncHandler(async (req, res) => {
     httpPhotos,
   } = req.body;
 
-  // if (!name || !dateOfBirth || !country || !city) {
-  //   return res.status(400).json({
-  //     success: false,
-  //     mes: "Missing required fields!",
-  //   });
-  // }
+  if (!name || !dateOfBirth || !country || !city) {
+    return res.status(400).json({
+      success: false,
+      mes: "Missing required fields!",
+    });
+  }
 
   let updatedPhotos = httpPhotos ? JSON.parse(httpPhotos) : []; // Nếu không có httpPhotos, gán là mảng rỗng.
   if (req.files && req.files.length > 0) {

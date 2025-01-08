@@ -416,22 +416,29 @@ const handleSocketEvents = (io, socket) => {
     }
   );
 
-  socket.on("forceDisconnect", async ({ userId, deviceId }) => {
-    try {
-      const session = await Session.findOneAndDelete({ userId, deviceId });
+  socket.on("forceDisconnect", async ({ userId, deviceId, password }) => {
+    const response = await UserModel.findById({ userId });
+    if (response && (await response.isCorrectPassword(password))) {
+      try {
+        const session = await Session.findOneAndDelete({ userId, deviceId });
 
-      if (session && session.socketId) {
-        // Gửi sự kiện ngắt kết nối tới thiết bị
-        io.to(session.socketId).emit("forceLogout");
-        socket.to(session.socketId).emit("forceLogout");
-        console.log(`Force logout event sent to socketId: ${session.socketId}`);
-      } else {
-        console.log(
-          `No active session found for userId: ${userId}, deviceId: ${deviceId}`
-        );
+        if (session && session.socketId) {
+          // Gửi sự kiện ngắt kết nối tới thiết bị
+          io.to(session.socketId).emit("forceLogout");
+          socket.to(session.socketId).emit("forceLogout");
+          console.log(
+            `Force logout event sent to socketId: ${session.socketId}`
+          );
+        } else {
+          console.log(
+            `No active session found for userId: ${userId}, deviceId: ${deviceId}`
+          );
+        }
+      } catch (error) {
+        console.error("Error forcing disconnect:", error);
       }
-    } catch (error) {
-      console.error("Error forcing disconnect:", error);
+    } else {
+      throw new Error("Password is incorrect.");
     }
   });
 

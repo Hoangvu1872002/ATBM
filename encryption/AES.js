@@ -7,6 +7,10 @@ const encryptionKey = process.env.AES_KEY; // 32 byte key
 
 // Mã hóa nội dung tin nhắn
 function encrypt(text, iv) {
+  if (typeof text !== "string") {
+    text = text.toString(); // Chuyển số hoặc dữ liệu không phải chuỗi thành chuỗi
+  }
+
   const cipher = crypto.createCipheriv(
     "aes-256-cbc",
     Buffer.from(encryptionKey),
