@@ -16,7 +16,7 @@ const getCurrentInfo = asyncHandler(async (req, res) => {
     const session = await Session.findOne({ userId: _id, deviceId });
 
     if (session && user) {
-      res.status(200).json({ success: true, data: user });
+      res.status(200).json({ success: true, data: user.decryptFields() });
     } else {
       res
         .status(404)
@@ -44,12 +44,12 @@ const updateInfo = asyncHandler(async (req, res) => {
     httpPhotos,
   } = req.body;
 
-  if (!name || !dateOfBirth || !country || !city) {
-    return res.status(400).json({
-      success: false,
-      mes: "Missing required fields!",
-    });
-  }
+  // if (!name || !dateOfBirth || !country || !city) {
+  //   return res.status(400).json({
+  //     success: false,
+  //     mes: "Missing required fields!",
+  //   });
+  // }
 
   let updatedPhotos = httpPhotos ? JSON.parse(httpPhotos) : []; // Nếu không có httpPhotos, gán là mảng rỗng.
   if (req.files && req.files.length > 0) {
@@ -57,31 +57,70 @@ const updateInfo = asyncHandler(async (req, res) => {
     updatedPhotos = updatedPhotos.concat(newPhotos); // Nối các tệp mới vào mảng cũ
   }
 
+  // try {
+  //   const updatedUser = await userModel.findByIdAndUpdate(
+  //     _id,
+  //     {
+  //       name,
+  //       dateOfBirth,
+  //       country,
+  //       city,
+  //       gender,
+  //       introduce: introductory,
+  //       hometown,
+  //       hobbies: JSON.parse(hobby),
+  //       height,
+  //       weight,
+  //       photos: updatedPhotos,
+  //     },
+  //     { new: true }
+  //   );
+
+  //   res.status(200).json({
+  //     success: true,
+  //     mes: "Update success!",
+  //     data: updatedUser,
+  //   });
+  // } catch (error) {
+  //   res.status(500).json({
+  //     success: false,
+  //     mes: "Failed to update user information.",
+  //   });
+  // }
+
   try {
-    const updatedUser = await userModel.findByIdAndUpdate(
-      _id,
-      {
-        name,
-        dateOfBirth,
-        country,
-        city,
-        gender,
-        introduce: introductory,
-        hometown,
-        hobbies: JSON.parse(hobby),
-        height,
-        weight,
-        photos: updatedPhotos,
-      },
-      { new: true }
-    );
+    // Tìm user theo ID
+    const user = await userModel.findById(_id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        mes: "User not found!",
+      });
+    }
+
+    // Cập nhật các trường
+    user.name = name || user.name;
+    user.dateOfBirth = dateOfBirth || user.dateOfBirth;
+    user.country = country || user.country;
+    user.city = city || user.city;
+    user.gender = gender || user.gender;
+    user.hometown = hometown || user.hometown;
+    user.introduce = introductory || user.introduce; // Trường sẽ được mã hóa tự động
+    user.hobbies = JSON.parse(hobby) || user.hobbies;
+    user.height = height || user.height;
+    user.weight = weight || user.weight;
+    user.photos = updatedPhotos || user.photos;
+
+    // Gọi save để kích hoạt middleware
+    await user.save();
 
     res.status(200).json({
       success: true,
       mes: "Update success!",
-      data: updatedUser,
+      data: user.decryptFields(),
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       mes: "Failed to update user information.",
@@ -404,7 +443,14 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
       .find({
         _id: { $nin: excludedUsers },
       })
-      .select("-password"); // Loại bỏ password khỏi kết quả
+      .select("-password");
+    // Loại bỏ password khỏi kết quả
+
+    users.forEach((user) => {
+      if (user.decryptFields) {
+        user.decryptFields(); // Giải mã từng đối tượng người dùng
+      }
+    });
 
     const transformUsers = (users) => {
       return users.map((user) => {
@@ -422,6 +468,8 @@ const getAllUsersExcludingLists = asyncHandler(async (req, res) => {
         };
       });
     };
+
+    // users.length > 0 && users.decryptFields();
 
     const data = transformUsers(users.map((user) => user._doc));
 
@@ -533,6 +581,12 @@ const getUsersInLikeList = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
+    usersInLike.forEach((user) => {
+      if (user.decryptFields) {
+        user.decryptFields(); // Giải mã từng đối tượng người dùng
+      }
+    });
+
     const transformUsers = (users) => {
       return users.map((user) => {
         const { _id, name, gender, dateOfBirth, city, photos } = user;
@@ -586,6 +640,12 @@ const getUsersInDislikeList = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
+    usersInDislike.forEach((user) => {
+      if (user.decryptFields) {
+        user.decryptFields(); // Giải mã từng đối tượng người dùng
+      }
+    });
+
     res.status(200).json({
       success: true,
       mes: "Users in listDislike fetched successfully!",
@@ -620,6 +680,12 @@ const getUsersInMatchList = asyncHandler(async (req, res) => {
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
 
+    usersInMatch.forEach((user) => {
+      if (user.decryptFields) {
+        user.decryptFields(); // Giải mã từng đối tượng người dùng
+      }
+    });
+
     res.status(200).json({
       success: true,
       mes: "Users in listMatch fetched successfully!",
@@ -643,6 +709,12 @@ const getUsersWhoLikedMe = asyncHandler(async (req, res) => {
         listLike: { $in: [_id] }, // Tìm những người có ID người dùng hiện tại trong listLike của họ
       })
       .select("-password"); // Loại bỏ password khỏi kết quả
+
+    usersWhoLikedMe.forEach((user) => {
+      if (user.decryptFields) {
+        user.decryptFields(); // Giải mã từng đối tượng người dùng
+      }
+    });
 
     const transformUsers = (users) => {
       return users.map((user) => {
@@ -703,7 +775,7 @@ const getUserInfo = asyncHandler(async (req, res) => {
     res.status(200).json({
       success: true,
       mes: "User info fetched successfully!",
-      data: user,
+      data: user.decryptFields(),
     });
   } catch (error) {
     res.status(500).json({
@@ -747,6 +819,12 @@ const getUserNearBy = asyncHandler(async (req, res) => {
       longitude: { $ne: null },
     });
     // .select("_id photos latitude longitude");
+
+    users.forEach((user) => {
+      if (user.decryptFields) {
+        user.decryptFields(); // Giải mã từng đối tượng người dùng
+      }
+    });
 
     // Lọc người dùng theo bán kính
     const nearbyUsers = users.filter((user) => {
