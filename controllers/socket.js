@@ -527,6 +527,33 @@ const handleSocketEvents = (io, socket) => {
     }
   });
 
+  socket.on("newLogin", async (userId, newDeviceName) => {
+    console.log(`New device logged in: ${newDeviceName} for user: ${userId}`);
+    const sendLoginNotificationToAllDevices = async (userId, newDeviceName) => {
+      try {
+        // Tìm tất cả các session của userId
+        const sessions = await Session.find({ userId });
+
+        // Nếu có session cũ, gửi thông báo tới tất cả các socketId đã đăng nhập
+        sessions.forEach((session) => {
+          // Tìm socketId của mỗi session cũ
+          const socket = io.sockets.sockets.get(session.socketId);
+          if (socket) {
+            // Gửi thông báo tới client có socketId
+            socket.emit("notification", {
+              message: "A new device has logged into your account.",
+              deviceName: newDeviceName,
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error while sending login notification:", error);
+      }
+    };
+    // Gửi thông báo đến tất cả các thiết bị đang đăng nhập vào tài khoản
+    await sendLoginNotificationToAllDevices(userId, newDeviceName);
+  });
+
   socket.on("disconnect", async () => {
     try {
       // Cập nhật socketId thành null khi client mất kết nối

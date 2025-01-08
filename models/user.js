@@ -41,15 +41,15 @@ var userSchema = new mongoose.Schema(
 const fieldsToEncrypt = [
   "name",
   "introduce",
-  "dateOfBirth",
+  // "dateOfBirth",
   "country",
   "city",
   "gender",
   "photos",
   "hometown",
   "hobbies",
-  "height",
-  "weight",
+  // "height",
+  // "weight",
 ];
 
 userSchema.pre("save", async function (next) {
@@ -108,7 +108,9 @@ userSchema.methods.decryptFields = function () {
   if (!this.iv) return {}; // Nếu không có IV, trả về đối tượng trống
 
   // Giải mã tất cả các trường cần thiết
-  const decryptedData = {};
+  const decryptedData = {
+    ...this.toObject(),
+  };
   fieldsToEncrypt.forEach((field) => {
     if (this[field]) {
       if (Array.isArray(this[field])) {

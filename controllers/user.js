@@ -1130,6 +1130,21 @@ const unblockUser = asyncHandler(async (req, res) => {
   }
 });
 
+const uploadImages = asyncHandler(async (req, res) => {
+  if (req.files && req.files.length > 0) {
+    const newPhotos = req.files.map((el) => el.path);
+    res.status(200).json({
+      success: true,
+      data: newPhotos,
+    });
+  } else {
+    res.status(500).json({
+      success: false,
+      mes: "Upload error.",
+    });
+  }
+});
+
 module.exports = {
   removeFromListLike,
   getUserInfo,
@@ -1151,4 +1166,5 @@ module.exports = {
   updateUserFilter,
   blockUser,
   unblockUser,
+  uploadImages,
 };

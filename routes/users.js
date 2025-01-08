@@ -19,6 +19,7 @@ const {
   getUserSessions,
   blockUser,
   unblockUser,
+  uploadImages,
 } = require("../controllers/user");
 const { verifyAccessToken } = require("../middlewares/verifyToken");
 const uploadImage = require("../config/cloudinary.config");
@@ -54,4 +55,10 @@ router.put("/update-user-filter", verifyAccessToken, updateUserFilter);
 router.post("/get-user-sessions", verifyAccessToken, getUserSessions);
 router.post("/block-user", verifyAccessToken, blockUser);
 router.post("/unblock-user", verifyAccessToken, unblockUser);
+router.post(
+  "/upload-images",
+  verifyAccessToken,
+  uploadImage.array("images", 6),
+  uploadImages
+);
 module.exports = router;
