@@ -537,10 +537,10 @@ const handleSocketEvents = (io, socket) => {
         // Nếu có session cũ, gửi thông báo tới tất cả các socketId đã đăng nhập
         sessions.forEach((session) => {
           // Tìm socketId của mỗi session cũ
-          const socket = io.sockets.sockets.get(session.socketId);
-          if (socket) {
+
+          if (session.socketId) {
             // Gửi thông báo tới client có socketId
-            socket.emit("notification", {
+            io.to(session.socketId).emit("notification", {
               message: "A new device has logged into your account.",
               deviceName: newDeviceName,
             });
