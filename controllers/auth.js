@@ -98,7 +98,7 @@ const logout = asyncHandler(async (req, res) => {
   }
 
   try {
-    await Session.findOneAndDelete({ _id, deviceId });
+    await Session.findOneAndDelete({ userId: _id, deviceId });
     res.status(200).json({ mes: "Logout successful." });
   } catch (error) {
     console.error("Error in /logout:", error);
