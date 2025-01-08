@@ -417,7 +417,7 @@ const handleSocketEvents = (io, socket) => {
   );
 
   socket.on("forceDisconnect", async ({ userId, deviceId, password }) => {
-    const response = await UserModel.findById({ userId });
+    const response = await UserModel.findById({ _id: userId });
     if (response && (await response.isCorrectPassword(password))) {
       try {
         const session = await Session.findOneAndDelete({ userId, deviceId });
