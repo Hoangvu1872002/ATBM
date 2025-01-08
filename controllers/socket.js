@@ -538,10 +538,10 @@ const handleSocketEvents = (io, socket) => {
         sessions.forEach((session) => {
           // Tìm socketId của mỗi session cũ
 
-          if (session.socketId && session.userId !== userId) {
+          if (session.socketId && session.deviceId !== newDeviceName) {
             // Gửi thông báo tới client có socketId
             io.to(session.socketId).emit("notification", {
-              message: "A new device has logged into your account.",
+              message: "Một thiết bị mới vừa đăng nhập vào tài khoản cảu bạn.",
               deviceName: newDeviceName,
             });
           }
