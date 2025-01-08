@@ -11,7 +11,6 @@ const messageSchema = new mongoose.Schema(
     image: { type: String },
     video: { type: String },
     file: { type: String },
-    iv: { type: String },
     status: {
       type: Boolean,
       default: false,
